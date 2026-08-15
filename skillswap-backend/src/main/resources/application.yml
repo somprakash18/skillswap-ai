@@ -1,0 +1,32 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: skillswap-backend
+  profiles:
+    active: dev
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+# Custom Security & JWT Configuration
+app:
+  jwt:
+    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    expirationMs: 86400000 # 24 Hours
+  openai:
+    apiKey: ${OPENAI_API_KEY:sk-proj-demo-mock-key}
+    model: gpt-3.5-turbo
+  razorpay:
+    keyId: ${RAZORPAY_KEY_ID:rzp_test_demo123}
+    keySecret: ${RAZORPAY_KEY_SECRET:demoSecret123}
+
+# OpenAPI Swagger Documentation
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html

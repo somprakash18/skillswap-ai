@@ -1,0 +1,36 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+*.log
+
+# Node & Package Managers
+node_modules/
+dist/
+build/
+.npm
+*.tgz
+
+# Java & Maven
+target/
+.mvn/
+*.class
+*.jar
+*.war
+
+# IDE & Editor Files
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# H2 Database files
+*.db
+*.trace.db
