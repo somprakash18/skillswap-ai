@@ -5,6 +5,7 @@ import RightActivityFeed from './components/RightActivityFeed';
 import NewSwapModal from './components/NewSwapModal';
 import LiveVideoCallRoom from './components/LiveVideoCallRoom';
 import GeminiAiChatbot from './components/GeminiAiChatbot';
+import GeminiVoiceWidget from './components/GeminiVoiceWidget';
 import { Search, Bell, Mail, Plus, ShieldCheck, User, LogOut, GraduationCap, ChevronDown, Sparkles, HelpCircle, FileText, Gift } from 'lucide-react';
 
 // EdTech Pages
@@ -134,6 +135,7 @@ function AppContent() {
       <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] text-[#0F172A] dark:text-[#F8FAFC]">
         {renderMainView()}
         <GeminiAiChatbot />
+        <GeminiVoiceWidget />
       </div>
     );
   }
@@ -283,6 +285,9 @@ function AppContent() {
 
       {/* Global Floating Gemini AI Chatbot */}
       <GeminiAiChatbot />
+
+      {/* Global Floating Gemini Voice AI Assistant */}
+      <GeminiVoiceWidget />
 
       {/* New Swap Request Modal */}
       {showNewSwapModal && (

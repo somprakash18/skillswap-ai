@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Users, GraduationCap, BookOpen, Coins, Star, ArrowRight, MessageSquare, CheckCircle, Sparkles, Flame, Zap, FileText, Video, Play, Award, CheckCircle2, Clock, Bookmark, HelpCircle } from 'lucide-react';
+import { Users, GraduationCap, BookOpen, Coins, Star, ArrowRight, MessageSquare, CheckCircle, Sparkles, Flame, Zap, FileText, Video, Play, Award, CheckCircle2, Clock, Bookmark, HelpCircle, Terminal, Mic } from 'lucide-react';
 import { AIRoadmapWidget } from '../components/AIWidgets';
 import CourseColumnsWidget from '../components/CourseColumnsWidget';
+import AnalyticsRadarWidget from '../components/AnalyticsRadarWidget';
+import CodePlaygroundModal from '../components/CodePlaygroundModal';
 
 export default function StudentDashboard({ setCurrentPage, setSelectedSkill, onOpenNewSwap, onOpenVideoCall }) {
   const { user } = useAuth();
   const userName = user && user.fullName && typeof user.fullName === 'string' ? user.fullName.trim().split(' ')[0] : 'Priya';
   const userCredits = user ? user.credits || 120 : 120;
+  const [showCodePlayground, setShowCodePlayground] = useState(false);
 
   const enrolledCourses = [
     {
@@ -78,11 +81,19 @@ export default function StudentDashboard({ setCurrentPage, setSelectedSkill, onO
                 Welcome to Student Portal, {userName}! 🎓
               </h1>
               <p className="text-blue-100 text-sm sm:text-base mt-2 leading-relaxed font-normal">
-                Track your active courses, join live classes, solve practice quizzes, and download formula PDFs.
+                Track your active courses, run code in the sandbox, solve practice quizzes, and download formula PDFs.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                onClick={() => setShowCodePlayground(true)}
+                className="px-5 py-3 rounded-xl bg-amber-400 text-slate-950 font-black text-xs hover:bg-amber-300 transition shadow-md flex items-center gap-2"
+              >
+                <Terminal className="w-4 h-4 text-slate-950" />
+                <span>⚡ Open Code Sandbox</span>
+              </button>
+
               <button
                 onClick={() => setCurrentPage('quiz-engine')}
                 className="px-5 py-3 rounded-xl bg-white text-blue-900 font-bold text-xs hover:bg-slate-100 transition shadow-sm flex items-center gap-2"
@@ -113,6 +124,9 @@ export default function StudentDashboard({ setCurrentPage, setSelectedSkill, onO
           </div>
         </div>
       </div>
+
+      {/* Subject Performance Analytics Radar Widget */}
+      <AnalyticsRadarWidget />
 
       {/* Continue Learning Cards */}
       <div className="space-y-4">
@@ -208,6 +222,12 @@ export default function StudentDashboard({ setCurrentPage, setSelectedSkill, onO
 
       {/* AI Learning Roadmap */}
       <AIRoadmapWidget />
+
+      {/* Interactive Code Playground Modal */}
+      <CodePlaygroundModal
+        isOpen={showCodePlayground}
+        onClose={() => setShowCodePlayground(false)}
+      />
 
     </div>
   );
