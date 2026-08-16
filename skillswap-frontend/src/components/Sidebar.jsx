@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Home, Compass, Users, MessageSquare, Calendar, Award, Settings, Moon, Sun, ArrowRight, RefreshCw, LogOut, ShieldCheck } from 'lucide-react';
+import { Home, Compass, Users, MessageSquare, Calendar, Award, Settings, Moon, Sun, ArrowRight, RefreshCw, LogOut, ShieldCheck, FileText } from 'lucide-react';
 
 export default function Sidebar({ currentPage, setCurrentPage, isDarkMode, setIsDarkMode }) {
   const { user, logout } = useAuth();
@@ -9,6 +9,7 @@ export default function Sidebar({ currentPage, setCurrentPage, isDarkMode, setIs
     { id: 'dashboard', label: 'Home', icon: Home },
     { id: 'explore', label: 'Explore', icon: Compass },
     { id: 'matches', label: 'Connections', icon: Users },
+    { id: 'materials', label: 'PDFs & Quizzes', icon: FileText },
     { id: 'chat', label: 'Messages', icon: MessageSquare },
     { id: 'events', label: 'Events & Sessions', icon: Calendar },
     { id: 'certificates', label: 'Certificates', icon: Award },

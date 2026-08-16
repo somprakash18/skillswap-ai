@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import ExploreSkills from './pages/ExploreSkills';
 import MatchesPage from './pages/MatchesPage';
 import SkillDetailPage from './pages/SkillDetailPage';
+import StudyMaterialsPage from './pages/StudyMaterialsPage';
 import ChatPage from './pages/ChatPage';
 import WalletPage from './pages/WalletPage';
 import ProfilePage from './pages/ProfilePage';
@@ -64,6 +65,8 @@ function AppContent() {
         return <ExploreSkills setCurrentPage={setCurrentPage} setSelectedSkill={setSelectedSkill} />;
       case 'matches':
         return <MatchesPage setCurrentPage={setCurrentPage} setSelectedSkill={setSelectedSkill} />;
+      case 'materials':
+        return <StudyMaterialsPage setCurrentPage={setCurrentPage} />;
       case 'skill-detail':
         return <SkillDetailPage skill={selectedSkill} setCurrentPage={setCurrentPage} />;
       case 'chat':
