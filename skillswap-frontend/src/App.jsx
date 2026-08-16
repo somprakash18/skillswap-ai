@@ -174,7 +174,7 @@ function AppContent() {
             {user && (
               <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-white/10">
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-300 hidden md:inline">
-                  Hi, {user.fullName.split(' ')[0].toLowerCase()}
+                  Hi, {user.fullName && typeof user.fullName === 'string' ? user.fullName.trim().split(' ')[0].toLowerCase() : 'user'}
                 </span>
                 <button
                   onClick={() => { logout(); setCurrentPage('login'); }}

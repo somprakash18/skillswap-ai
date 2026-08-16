@@ -7,7 +7,7 @@ import CourseColumnsWidget from '../components/CourseColumnsWidget';
 
 export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewSwap, onOpenVideoCall }) {
   const { user } = useAuth();
-  const userName = user ? user.fullName.split(' ')[0].toLowerCase() : 'som';
+  const userName = user && user.fullName && typeof user.fullName === 'string' ? user.fullName.trim().split(' ')[0].toLowerCase() : 'student';
   const userCredits = user ? user.credits || 120 : 120;
 
   const bestMatches = [

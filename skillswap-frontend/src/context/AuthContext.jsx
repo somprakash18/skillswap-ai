@@ -4,25 +4,43 @@ import { fetchApi } from '../services/api';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // Read saved session or default to NULL (No hardcoded default user)
+  // Read saved session safely
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('user');
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      return (parsed && typeof parsed === 'object') ? parsed : null;
+    } catch (e) {
+      localStorage.removeItem('user');
+      return null;
+    }
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+  const [token, setToken] = useState(() => {
+    try {
+      return localStorage.getItem('token') || null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   const [wallet, setWallet] = useState({ balance: 120, totalEarned: 85, totalSpent: 45 });
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Welcome to SkillSwap AI!', message: 'You have received 50 bonus credits.', type: 'SYSTEM', isRead: false }
   ]);
 
   useEffect(() => {
-    if (token && user) {
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    try {
+      if (token && user) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    } catch (e) {
+      console.warn('Storage sync error:', e);
     }
   }, [token, user]);
 
@@ -39,7 +57,6 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {
       console.log('Using simulation OTP mode');
     }
-    // Simulation fallback
     return { success: true, otp: '123456', message: 'OTP sent to ' + mobileNumber };
   };
 
@@ -54,8 +71,8 @@ export const AuthProvider = ({ children }) => {
         setToken(res.data.token);
         const userData = {
           id: res.data.id,
-          email: res.data.email,
-          fullName: res.data.fullName,
+          email: res.data.email || 'user@gmail.com',
+          fullName: res.data.fullName || 'Student User',
           college: res.data.college || 'Stanford University',
           mobileNumber: mobileNumber,
           role: res.data.role || 'ROLE_USER',
@@ -71,8 +88,7 @@ export const AuthProvider = ({ children }) => {
       console.log('Using local OTP login verification');
     }
 
-    // Local OTP Auth Fallback
-    const cleanPhone = mobileNumber.replace(/[^0-9]/g, '');
+    const cleanPhone = (mobileNumber || '').replace(/[^0-9]/g, '');
     const newUser = {
       id: Date.now(),
       email: email || `user_${cleanPhone}@gmail.com`,
@@ -135,7 +151,7 @@ export const AuthProvider = ({ children }) => {
       const mockUser = {
         id: Date.now(),
         email: email,
-        fullName: email.split('@')[0],
+        fullName: email && email.includes('@') ? email.split('@')[0] : 'Student User',
         college: 'Stanford University',
         role: 'ROLE_USER',
         avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
