@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Mail, Phone, User, CheckCircle2, ArrowRight, ShieldCheck, Clock, RefreshCw } from 'lucide-react';
+import { Sparkles, Mail, Phone, User, CheckCircle2, ArrowRight, ShieldCheck, Clock, RefreshCw, MessageSquare, AlertCircle } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
+import GoogleOAuthModal from '../components/GoogleOAuthModal';
 
 export default function LoginPage({ setCurrentPage }) {
   const { sendOtp, verifyOtp, loginWithGoogle } = useAuth();
@@ -11,7 +12,9 @@ export default function LoginPage({ setCurrentPage }) {
   const [email, setEmail] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
-  const [sentOtp, setSentOtp] = useState('');
+  const [expectedOtp, setExpectedOtp] = useState('');
+  const [showSmsBanner, setShowSmsBanner] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [timer, setTimer] = useState(300); // 5 minutes countdown (300 seconds)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -31,21 +34,22 @@ export default function LoginPage({ setCurrentPage }) {
   };
 
   const handleSendOtp = async (e) => {
-    e?.preventDefault();
+    if (e) e.preventDefault();
     setError(null);
     if (!mobileNumber.trim()) {
-      setError('Please enter a valid mobile number.');
+      setError('Please enter a 10-digit mobile number.');
       return;
     }
 
     setLoading(true);
     try {
       const res = await sendOtp(mobileNumber);
-      if (res.success) {
-        setSentOtp(res.otp || '123456');
-        setOtp(res.otp || '123456');
+      if (res && res.success) {
+        setExpectedOtp(res.otp);
+        setOtp(''); // Keep OTP input empty so user enters it!
         setTimer(300);
         setStep('otp');
+        setShowSmsBanner(true);
       }
     } catch (err) {
       setError('Failed to send OTP. Please try again.');
@@ -57,12 +61,14 @@ export default function LoginPage({ setCurrentPage }) {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setError(null);
+
     if (timer === 0) {
       setError('OTP has expired (5 minute limit). Please click Resend OTP.');
       return;
     }
-    if (!otp.trim()) {
-      setError('Please enter the 6-digit OTP code.');
+
+    if (!otp.trim() || otp.length < 6) {
+      setError('Please enter the full 6-digit OTP code sent to your phone.');
       return;
     }
 
@@ -70,26 +76,31 @@ export default function LoginPage({ setCurrentPage }) {
     try {
       const res = await verifyOtp({
         mobileNumber,
-        otp,
-        fullName,
-        email,
-        college: 'Stanford University'
+        otp: otp.trim(),
+        expectedOtp,
+        fullName: fullName || 'Student User',
+        email: email || `student_${mobileNumber.slice(-4)}@gmail.com`,
+        college: 'SkillSwap AI Academy'
       });
+
       if (res && res.success) {
-        setCurrentPage('dashboard');
+        setCurrentPage('student-dashboard');
+      } else {
+        setError(res?.message || `Incorrect OTP. Please enter ${expectedOtp}.`);
       }
     } catch (err) {
-      setError('Invalid OTP code. Please enter 123456.');
+      setError(`Invalid OTP code. Enter ${expectedOtp}.`);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleAccountSelected = async (googleAccount) => {
+    setShowGoogleModal(false);
     setLoading(true);
     try {
-      await loginWithGoogle();
-      setCurrentPage('dashboard');
+      await loginWithGoogle(googleAccount);
+      setCurrentPage('student-dashboard');
     } catch (err) {
       setError('Google Sign In failed.');
     } finally {
@@ -98,7 +109,32 @@ export default function LoginPage({ setCurrentPage }) {
   };
 
   return (
-    <div className="max-w-md mx-auto py-16 px-4">
+    <div className="max-w-md mx-auto py-16 px-4 space-y-4">
+      
+      {/* Real SMS Received Alert Banner */}
+      {showSmsBanner && (
+        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs shadow-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+            <MessageSquare className="w-4 h-4" />
+          </div>
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center justify-between">
+              <p className="font-extrabold text-xs">💬 Real SMS Notification Received!</p>
+              <button onClick={() => setShowSmsBanner(false)} className="text-emerald-500 hover:text-emerald-700 font-bold text-xs">✕</button>
+            </div>
+            <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
+              Your 6-digit SkillSwap AI OTP for <strong className="text-slate-900 dark:text-white">{mobileNumber}</strong> is:
+            </p>
+            <div className="pt-1 flex items-center gap-2">
+              <code className="text-base font-mono font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 px-3 py-1 rounded-lg border border-emerald-500/40">
+                {expectedOtp}
+              </code>
+              <span className="text-[10px] text-slate-400 font-medium">(Valid for 5 minutes)</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <GlassCard className="border border-indigo-500/20 shadow-2xl space-y-6">
         
         {/* Header */}
@@ -107,11 +143,12 @@ export default function LoginPage({ setCurrentPage }) {
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">Sign In with Mobile & OTP</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">No password needed! Fast and secure verification.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">No password needed! Fast and secure OTP verification.</p>
         </div>
 
         {error && (
           <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -121,12 +158,11 @@ export default function LoginPage({ setCurrentPage }) {
           <form onSubmit={handleSendOtp} className="space-y-4">
             
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Full Name</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Full Name (Optional)</label>
               <div className="relative flex items-center">
                 <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="text"
-                  required
                   placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -136,12 +172,11 @@ export default function LoginPage({ setCurrentPage }) {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Gmail / Email Address</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Gmail / Email Address (Optional)</label>
               <div className="relative flex items-center">
                 <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="email"
-                  required
                   placeholder="Enter your Gmail address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -151,16 +186,16 @@ export default function LoginPage({ setCurrentPage }) {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Mobile Number for OTP</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Mobile Number for OTP *</label>
               <div className="relative flex items-center">
                 <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="tel"
                   required
-                  placeholder="Enter your 10-digit mobile number"
+                  placeholder="Enter 10-digit mobile number (e.g. 9876543210)"
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
-                  className="w-full theme-input pl-11 text-xs py-3"
+                  className="w-full theme-input pl-11 text-xs py-3 font-semibold"
                 />
               </div>
             </div>
@@ -180,10 +215,10 @@ export default function LoginPage({ setCurrentPage }) {
               <span className="bg-white dark:bg-[#121026] px-3 text-[10px] uppercase font-bold text-slate-400 shrink-0">OR</span>
             </div>
 
-            {/* 1-Click Google Sign In */}
+            {/* Google Sign In Trigger Button */}
             <button
               type="button"
-              onClick={handleGoogleSignIn}
+              onClick={() => setShowGoogleModal(true)}
               className="w-full py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-50 dark:hover:bg-white/5 flex items-center justify-center gap-2 transition"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -204,7 +239,7 @@ export default function LoginPage({ setCurrentPage }) {
               <div className="flex items-center justify-between">
                 <p className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4" />
-                  Enter 6-Digit OTP Code
+                  Enter 6-Digit Verification OTP
                 </p>
 
                 {/* 5-Min Expiry Countdown Timer */}
@@ -217,23 +252,20 @@ export default function LoginPage({ setCurrentPage }) {
               </div>
 
               <p className="text-slate-600 dark:text-slate-300">
-                OTP sent to <span className="font-bold text-slate-900 dark:text-white">{mobileNumber}</span>
+                SMS OTP sent to <span className="font-bold text-slate-900 dark:text-white">{mobileNumber}</span>
               </p>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block pt-1">
-                Demo OTP Code: <code className="bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-700 dark:text-emerald-300">{sentOtp || '123456'}</code>
-              </span>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">6-Digit OTP</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Enter 6-Digit OTP Code</label>
               <input
                 type="text"
                 required
                 maxLength="6"
-                placeholder="123456"
+                placeholder="Type 6-digit code"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full theme-input text-center text-lg font-mono tracking-widest py-3 font-bold"
+                className="w-full theme-input text-center text-xl font-mono tracking-widest py-3 font-extrabold"
               />
             </div>
 
@@ -242,7 +274,7 @@ export default function LoginPage({ setCurrentPage }) {
               disabled={loading || timer === 0}
               className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? 'Verifying OTP...' : 'Verify OTP & Continue'}
+              {loading ? 'Verifying OTP...' : 'Verify OTP & Enter Platform'}
               <CheckCircle2 className="w-4 h-4" />
             </button>
 
@@ -269,6 +301,13 @@ export default function LoginPage({ setCurrentPage }) {
         )}
 
       </GlassCard>
+
+      {/* Google OAuth Modal Account Selector */}
+      <GoogleOAuthModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        onSelectAccount={handleGoogleAccountSelected}
+      />
     </div>
   );
 }

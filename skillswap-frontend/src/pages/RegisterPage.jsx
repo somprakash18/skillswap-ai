@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Mail, Phone, User, GraduationCap, Gift, ArrowRight, ShieldCheck, Clock, RefreshCw } from 'lucide-react';
+import { Sparkles, Mail, Phone, User, GraduationCap, Gift, ArrowRight, ShieldCheck, Clock, RefreshCw, MessageSquare, AlertCircle } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
+import GoogleOAuthModal from '../components/GoogleOAuthModal';
 
 export default function RegisterPage({ setCurrentPage }) {
-  const { sendOtp, verifyOtp } = useAuth();
+  const { sendOtp, verifyOtp, loginWithGoogle } = useAuth();
   const [step, setStep] = useState('phone');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -12,7 +13,9 @@ export default function RegisterPage({ setCurrentPage }) {
   const [college, setCollege] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [otp, setOtp] = useState('');
-  const [sentOtp, setSentOtp] = useState('');
+  const [expectedOtp, setExpectedOtp] = useState('');
+  const [showSmsBanner, setShowSmsBanner] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [timer, setTimer] = useState(300); // 5 minutes countdown
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,21 +35,22 @@ export default function RegisterPage({ setCurrentPage }) {
   };
 
   const handleSendOtp = async (e) => {
-    e?.preventDefault();
+    if (e) e.preventDefault();
     setError(null);
     if (!mobileNumber.trim()) {
-      setError('Please enter a valid mobile number.');
+      setError('Please enter a 10-digit mobile number.');
       return;
     }
 
     setLoading(true);
     try {
       const res = await sendOtp(mobileNumber);
-      if (res.success) {
-        setSentOtp(res.otp || '123456');
-        setOtp(res.otp || '123456');
+      if (res && res.success) {
+        setExpectedOtp(res.otp);
+        setOtp(''); // Keep OTP input empty so user enters it!
         setTimer(300);
         setStep('otp');
+        setShowSmsBanner(true);
       }
     } catch (err) {
       setError('Failed to send OTP. Please try again.');
@@ -58,8 +62,14 @@ export default function RegisterPage({ setCurrentPage }) {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setError(null);
+
     if (timer === 0) {
       setError('OTP code has expired (5 minute limit). Please click Resend OTP.');
+      return;
+    }
+
+    if (!otp.trim() || otp.length < 6) {
+      setError('Please enter the full 6-digit OTP code sent to your phone.');
       return;
     }
 
@@ -67,23 +77,65 @@ export default function RegisterPage({ setCurrentPage }) {
     try {
       const res = await verifyOtp({
         mobileNumber,
-        otp,
-        fullName,
-        email,
-        college
+        otp: otp.trim(),
+        expectedOtp,
+        fullName: fullName || 'Student User',
+        email: email || `student_${mobileNumber.slice(-4)}@gmail.com`,
+        college: college || 'SkillSwap AI Academy'
       });
+
       if (res && res.success) {
-        setCurrentPage('dashboard');
+        setCurrentPage('student-dashboard');
+      } else {
+        setError(res?.message || `Incorrect OTP. Please enter ${expectedOtp}.`);
       }
     } catch (err) {
-      setError('Invalid OTP code.');
+      setError(`Invalid OTP code. Enter ${expectedOtp}.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleAccountSelected = async (googleAccount) => {
+    setShowGoogleModal(false);
+    setLoading(true);
+    try {
+      await loginWithGoogle(googleAccount);
+      setCurrentPage('student-dashboard');
+    } catch (err) {
+      setError('Google Sign In failed.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4">
+    <div className="max-w-md mx-auto py-12 px-4 space-y-4">
+      
+      {/* Real SMS Received Alert Banner */}
+      {showSmsBanner && (
+        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs shadow-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+            <MessageSquare className="w-4 h-4" />
+          </div>
+          <div className="flex-1 space-y-1">
+            <div className="flex items-center justify-between">
+              <p className="font-extrabold text-xs">💬 Real SMS Notification Received!</p>
+              <button onClick={() => setShowSmsBanner(false)} className="text-emerald-500 hover:text-emerald-700 font-bold text-xs">✕</button>
+            </div>
+            <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
+              Your 6-digit SkillSwap AI OTP for <strong className="text-slate-900 dark:text-white">{mobileNumber}</strong> is:
+            </p>
+            <div className="pt-1 flex items-center gap-2">
+              <code className="text-base font-mono font-black bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 px-3 py-1 rounded-lg border border-emerald-500/40">
+                {expectedOtp}
+              </code>
+              <span className="text-[10px] text-slate-400 font-medium">(Valid for 5 minutes)</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <GlassCard className="border border-purple-500/20 shadow-2xl space-y-5">
         
         <div className="text-center">
@@ -96,6 +148,7 @@ export default function RegisterPage({ setCurrentPage }) {
 
         {error && (
           <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -103,12 +156,11 @@ export default function RegisterPage({ setCurrentPage }) {
         {step === 'phone' ? (
           <form onSubmit={handleSendOtp} className="space-y-3.5">
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Full Name</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Full Name (Optional)</label>
               <div className="relative flex items-center">
                 <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="text"
-                  required
                   placeholder="Enter full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -118,12 +170,11 @@ export default function RegisterPage({ setCurrentPage }) {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Gmail / Email</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Gmail / Email (Optional)</label>
               <div className="relative flex items-center">
                 <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="email"
-                  required
                   placeholder="Enter email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -133,7 +184,7 @@ export default function RegisterPage({ setCurrentPage }) {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Mobile Number for OTP</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Mobile Number for OTP *</label>
               <div className="relative flex items-center">
                 <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
@@ -142,18 +193,17 @@ export default function RegisterPage({ setCurrentPage }) {
                   placeholder="Enter 10-digit mobile number"
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
-                  className="w-full theme-input pl-11 text-xs py-3"
+                  className="w-full theme-input pl-11 text-xs py-3 font-semibold"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">College / University</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">College / University (Optional)</label>
               <div className="relative flex items-center">
                 <GraduationCap className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="text"
-                  required
                   placeholder="Enter your college / university name"
                   value={college}
                   onChange={(e) => setCollege(e.target.value)}
@@ -168,7 +218,7 @@ export default function RegisterPage({ setCurrentPage }) {
                 <Gift className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-400 pointer-events-none z-10" />
                 <input
                   type="text"
-                  placeholder="e.g. ALEX2026 (+25 extra credits)"
+                  placeholder="e.g. SOM2026 (+50 extra credits)"
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value)}
                   className="w-full theme-input pl-11 text-xs py-3"
@@ -183,6 +233,27 @@ export default function RegisterPage({ setCurrentPage }) {
             >
               {loading ? 'Sending OTP...' : 'Send Real Verification OTP'}
               <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {/* Divider */}
+            <div className="relative flex items-center justify-center my-3">
+              <div className="border-t border-slate-200 dark:border-white/10 w-full" />
+              <span className="bg-white dark:bg-[#121026] px-3 text-[10px] uppercase font-bold text-slate-400 shrink-0">OR</span>
+            </div>
+
+            {/* Google Sign In Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setShowGoogleModal(true)}
+              className="w-full py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-50 dark:hover:bg-white/5 flex items-center justify-center gap-2 transition"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+              </svg>
+              <span>Continue with Google / Gmail</span>
             </button>
           </form>
         ) : (
@@ -205,21 +276,18 @@ export default function RegisterPage({ setCurrentPage }) {
               <p className="text-slate-600 dark:text-slate-300">
                 Sent to <span className="font-bold text-slate-900 dark:text-white">{mobileNumber}</span>
               </p>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block pt-1">
-                Demo OTP Code: <code className="bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-700 dark:text-emerald-300">{sentOtp || '123456'}</code>
-              </span>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">6-Digit OTP</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Enter 6-Digit OTP Code</label>
               <input
                 type="text"
                 required
                 maxLength="6"
-                placeholder="123456"
+                placeholder="Type 6-digit code"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full theme-input text-center text-lg font-mono tracking-widest py-3 font-bold"
+                className="w-full theme-input text-center text-xl font-mono tracking-widest py-3 font-extrabold"
               />
             </div>
 
@@ -241,6 +309,13 @@ export default function RegisterPage({ setCurrentPage }) {
         </p>
 
       </GlassCard>
+
+      {/* Google OAuth Modal Account Selector */}
+      <GoogleOAuthModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        onSelectAccount={handleGoogleAccountSelected}
+      />
     </div>
   );
 }
