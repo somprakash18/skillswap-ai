@@ -1,11 +1,13 @@
 -- =========================================================
--- SkillSwap AI - Complete 22-Table EdTech MySQL Database Schema
+-- SkillSwap AI - Complete 24-Table EdTech MySQL Database Schema
 -- =========================================================
 
 CREATE DATABASE IF NOT EXISTS skillswap_db;
 USE skillswap_db;
 
 -- Drop tables in reverse order of dependencies
+DROP TABLE IF EXISTS chat_messages;
+DROP TABLE IF EXISTS chat_sessions;
 DROP TABLE IF EXISTS achievements;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS chats;
@@ -122,7 +124,7 @@ CREATE TABLE courses (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     teacher_id BIGINT NOT NULL,
     title VARCHAR(200) NOT NULL,
-    category VARCHAR(50) NOT NULL, -- 'JEE', 'NEET', 'CODING', 'UPSC', 'CAT', 'GATE', 'DESIGN', 'LANGUAGES'
+    category VARCHAR(50) NOT NULL,
     subject VARCHAR(100) NOT NULL,
     description TEXT NOT NULL,
     cover_image_url VARCHAR(500),
@@ -152,7 +154,7 @@ CREATE TABLE quizzes (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     course_id BIGINT,
     title VARCHAR(200) NOT NULL,
-    category VARCHAR(50) NOT NULL, -- 'JEE', 'NEET', 'CODING', 'UPSC'
+    category VARCHAR(50) NOT NULL,
     duration_minutes INT DEFAULT 30,
     total_marks INT DEFAULT 100,
     negative_marking DOUBLE DEFAULT 1.0,
@@ -166,7 +168,7 @@ CREATE TABLE questions (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     quiz_id BIGINT NOT NULL,
     question_text TEXT NOT NULL,
-    question_type VARCHAR(30) DEFAULT 'MCQ', -- 'MCQ', 'MULTI_SELECT', 'NUMERICAL', 'CODING'
+    question_type VARCHAR(30) DEFAULT 'MCQ',
     marks INT DEFAULT 4,
     explanation TEXT,
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
@@ -185,9 +187,9 @@ CREATE TABLE answers (
 CREATE TABLE pdf_library (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
-    category VARCHAR(50) NOT NULL, -- 'JEE', 'NEET', 'CODING', 'UPSC', 'CAT', 'GATE'
+    category VARCHAR(50) NOT NULL,
     subject VARCHAR(100) NOT NULL,
-    doc_type VARCHAR(50) DEFAULT 'Formula Sheet', -- 'Notes', 'Formula Sheet', 'PYQ Bank', 'Cheat Sheet'
+    doc_type VARCHAR(50) DEFAULT 'Formula Sheet',
     pdf_url VARCHAR(500) NOT NULL,
     file_size_mb DOUBLE DEFAULT 4.5,
     download_count INT DEFAULT 120,
@@ -247,7 +249,7 @@ CREATE TABLE transactions (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     wallet_id BIGINT NOT NULL,
     amount INT NOT NULL,
-    type VARCHAR(30) NOT NULL, -- 'EARNED', 'SPENT', 'PURCHASED', 'REFERRAL_BONUS'
+    type VARCHAR(30) NOT NULL,
     description VARCHAR(255) NOT NULL,
     razorpay_payment_id VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -277,7 +279,7 @@ CREATE TABLE live_classes (
     scheduled_time DATETIME NOT NULL,
     google_meet_url VARCHAR(500) NOT NULL,
     attendees_count INT DEFAULT 0,
-    status VARCHAR(20) DEFAULT 'SCHEDULED', -- 'SCHEDULED', 'LIVE', 'COMPLETED'
+    status VARCHAR(20) DEFAULT 'SCHEDULED',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -316,4 +318,28 @@ CREATE TABLE achievements (
     description TEXT NOT NULL,
     unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 23. AI Chatbot Sessions Table
+CREATE TABLE chat_sessions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    title VARCHAR(200) NOT NULL DEFAULT 'New Conversation',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_session_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 24. AI Chatbot Messages Table
+CREATE TABLE chat_messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    role VARCHAR(20) NOT NULL, -- 'user', 'assistant', 'system'
+    content TEXT NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_msg_session (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
