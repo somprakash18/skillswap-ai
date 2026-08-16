@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Users, GraduationCap, BookOpen, Coins, Star, ArrowRight, MessageSquare, CheckCircle, Sparkles } from 'lucide-react';
+import { Users, GraduationCap, BookOpen, Coins, Star, ArrowRight, MessageSquare, CheckCircle, Sparkles, Flame, ShieldCheck, Zap, FileText } from 'lucide-react';
 import { AIRoadmapWidget } from '../components/AIWidgets';
 import ActiveLearningWidget from '../components/ActiveLearningWidget';
 import CourseColumnsWidget from '../components/CourseColumnsWidget';
@@ -8,6 +8,7 @@ import CourseColumnsWidget from '../components/CourseColumnsWidget';
 export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewSwap, onOpenVideoCall }) {
   const { user } = useAuth();
   const userName = user ? user.fullName.split(' ')[0].toLowerCase() : 'som';
+  const userCredits = user ? user.credits || 120 : 120;
 
   const bestMatches = [
     {
@@ -37,73 +38,134 @@ export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewS
   ];
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-8 pb-16">
       
-      {/* Royal Blue Welcome Banner (Matching Image 1 & 4) */}
-      <div className="bg-banner-blue rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
-        <div className="max-w-2xl space-y-2 relative z-10">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            Welcome back, {userName}!
-          </h1>
-          <p className="text-blue-100 text-sm sm:text-base leading-relaxed">
-            Ready to exchange skills and grow together? Find your perfect match today.
-          </p>
-        </div>
+      {/* Premium Hero Welcome Banner */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-8 sm:p-10 text-white shadow-2xl shadow-blue-500/20 relative overflow-hidden">
+        
+        {/* Ambient Glow Circles */}
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-purple-500/30 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="absolute top-1/2 right-6 -translate-y-1/2 hidden md:block opacity-30 pointer-events-none">
-          <Sparkles className="w-32 h-32 text-white" />
+        <div className="relative z-10 space-y-4">
+          
+          {/* Live Status Badges */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-bold text-white border border-white/20 shadow-xs">
+              <Flame className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
+              7 Day Learning Streak
+            </span>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 backdrop-blur-md text-xs font-bold text-amber-200 border border-amber-400/30 shadow-xs">
+              <Coins className="w-3.5 h-3.5 text-amber-300" />
+              {userCredits} Wallet Credits
+            </span>
+          </div>
+
+          <div>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+              Welcome back, {userName}! 👋
+            </h1>
+            <p className="text-blue-100 text-sm sm:text-base max-w-2xl mt-1.5 leading-relaxed">
+              Ready to exchange skills and grow together? Learn from AIR toppers, IIT seniors & tech mentors today.
+            </p>
+          </div>
+
+          {/* Quick Action Chips */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            <button
+              onClick={() => setCurrentPage('matches')}
+              className="px-3.5 py-1.5 rounded-xl bg-white text-blue-900 font-extrabold text-xs hover:bg-slate-100 transition shadow-sm flex items-center gap-1.5"
+            >
+              <Zap className="w-3.5 h-3.5 text-blue-600" />
+              Instant AI Match
+            </button>
+            <button
+              onClick={() => setCurrentPage('materials')}
+              className="px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs border border-white/20 transition flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              JEE/NEET PDF Question Banks
+            </button>
+            <button
+              onClick={onOpenNewSwap}
+              className="px-3.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs border border-white/20 transition flex items-center gap-1.5"
+            >
+              + Post Swap Request
+            </button>
+          </div>
+
         </div>
       </div>
 
-      {/* 4 Stat Cards Grid (Matching Image 1) */}
+      {/* 4 Enhanced Stat Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="theme-card flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+        
+        <div className="theme-card flex items-center gap-4 hover:-translate-y-1 transition-transform">
+          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/20">
             <Users className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Users</p>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">50+</h3>
+            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
+              +12% this week
+            </span>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">50+</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Swappers</p>
           </div>
         </div>
 
-        <div className="theme-card flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+        <div className="theme-card flex items-center gap-4 hover:-translate-y-1 transition-transform">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
             <GraduationCap className="w-6 h-6" />
           </div>
           <div>
+            <span className="text-[10px] font-bold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-md">
+              Active Mentor
+            </span>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">2</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Skills I Teach</p>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">2</h3>
           </div>
         </div>
 
-        <div className="theme-card flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+        <div className="theme-card flex items-center gap-4 hover:-translate-y-1 transition-transform">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-500/20">
             <BookOpen className="w-6 h-6" />
           </div>
           <div>
+            <span className="text-[10px] font-bold text-indigo-500 bg-indigo-500/10 px-1.5 py-0.5 rounded-md">
+              Enrolled
+            </span>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">1</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Skills I Learn</p>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">1</h3>
           </div>
         </div>
 
-        <div className="theme-card flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <div className="theme-card flex items-center gap-4 hover:-translate-y-1 transition-transform">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20">
             <Coins className="w-6 h-6" />
           </div>
           <div>
+            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-md">
+              Available
+            </span>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">4</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Potential Matches</p>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">4</h3>
           </div>
         </div>
+
       </div>
 
-      {/* 2 Primary Action Cards (Matching Image 1) */}
+      {/* 2 Primary Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="theme-card flex flex-col justify-between space-y-4">
+        <div className="theme-card flex flex-col justify-between space-y-4 border border-slate-100 dark:border-white/10 hover:border-blue-500/40">
           <div>
-            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Update Your Skills</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+                <GraduationCap className="w-4 h-4" />
+              </div>
+              <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Update Your Skills</h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
               Keep your teaching and learning skills up to date for better matches.
             </p>
           </div>
@@ -112,10 +174,15 @@ export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewS
           </button>
         </div>
 
-        <div className="theme-card flex flex-col justify-between space-y-4">
+        <div className="theme-card flex flex-col justify-between space-y-4 border border-slate-100 dark:border-white/10 hover:border-emerald-500/40">
           <div>
-            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Find Matches</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+                <Zap className="w-4 h-4" />
+              </div>
+              <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Find Matches</h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
               Discover people who want to learn what you teach and vice versa.
             </p>
           </div>
@@ -125,7 +192,7 @@ export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewS
         </div>
       </div>
 
-      {/* "Learn Doing Stuff." Active Learning Courses (Matching Image 2 Screen 1) */}
+      {/* "Learn Doing Stuff." Active Learning Track */}
       <ActiveLearningWidget
         onOpenVideoCall={onOpenVideoCall}
         onAddSkill={onOpenNewSwap}
@@ -137,7 +204,7 @@ export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewS
         setSelectedSkill={setSelectedSkill}
       />
 
-      {/* Your Best Match ⭐ Section (Matching Image 1 & 2) */}
+      {/* Your Best Match ⭐ Section */}
       <div className="space-y-4 pt-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
