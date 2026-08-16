@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { Users, GraduationCap, BookOpen, Coins, Star, ArrowRight, MessageSquare, CheckCircle, Sparkles } from 'lucide-react';
 import { AIRoadmapWidget } from '../components/AIWidgets';
 import ActiveLearningWidget from '../components/ActiveLearningWidget';
+import CourseColumnsWidget from '../components/CourseColumnsWidget';
 
 export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewSwap, onOpenVideoCall }) {
   const { user } = useAuth();
-  const userName = user ? user.fullName.split(' ')[0].toLowerCase() : 'john';
+  const userName = user ? user.fullName.split(' ')[0].toLowerCase() : 'som';
 
   const bestMatches = [
     {
@@ -128,6 +129,12 @@ export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewS
       <ActiveLearningWidget
         onOpenVideoCall={onOpenVideoCall}
         onAddSkill={onOpenNewSwap}
+      />
+
+      {/* Categorized Course Columns: Java, Python, Web Dev, JEE & NEET */}
+      <CourseColumnsWidget
+        setCurrentPage={setCurrentPage}
+        setSelectedSkill={setSelectedSkill}
       />
 
       {/* Your Best Match ⭐ Section (Matching Image 1 & 2) */}

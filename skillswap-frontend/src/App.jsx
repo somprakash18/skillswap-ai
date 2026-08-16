@@ -121,12 +121,13 @@ function AppContent() {
         {/* Top Header Bar */}
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-[#121026]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-6 py-3.5 flex items-center justify-between gap-4">
           
-          <div className="relative flex-1 max-w-xl">
-            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+          {/* Top Search Bar */}
+          <div className="relative flex-1 max-w-sm sm:max-w-md md:max-w-xl">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
             <input
               type="text"
               placeholder="Search for skills, people, or events..."
-              className="w-full theme-input pl-10 text-xs py-2"
+              className="w-full theme-input pl-11 text-xs py-2 font-medium"
             />
           </div>
 
