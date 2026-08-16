@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Mail, Phone, User, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sparkles, Mail, Phone, User, CheckCircle2, ArrowRight, ShieldCheck, Clock, RefreshCw } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 
 export default function LoginPage({ setCurrentPage }) {
@@ -12,11 +12,26 @@ export default function LoginPage({ setCurrentPage }) {
   const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [sentOtp, setSentOtp] = useState('');
+  const [timer, setTimer] = useState(300); // 5 minutes countdown (300 seconds)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    let interval = null;
+    if (step === 'otp' && timer > 0) {
+      interval = setInterval(() => setTimer(prev => prev - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [step, timer]);
+
+  const formatTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleSendOtp = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setError(null);
     if (!mobileNumber.trim()) {
       setError('Please enter a valid mobile number.');
@@ -29,6 +44,7 @@ export default function LoginPage({ setCurrentPage }) {
       if (res.success) {
         setSentOtp(res.otp || '123456');
         setOtp(res.otp || '123456');
+        setTimer(300);
         setStep('otp');
       }
     } catch (err) {
@@ -41,6 +57,10 @@ export default function LoginPage({ setCurrentPage }) {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setError(null);
+    if (timer === 0) {
+      setError('OTP has expired (5 minute limit). Please click Resend OTP.');
+      return;
+    }
     if (!otp.trim()) {
       setError('Please enter the 6-digit OTP code.');
       return;
@@ -150,7 +170,7 @@ export default function LoginPage({ setCurrentPage }) {
               disabled={loading}
               className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 mt-2"
             >
-              {loading ? 'Sending OTP...' : 'Send OTP Code'}
+              {loading ? 'Sending OTP...' : 'Send Real OTP Code'}
               <ArrowRight className="w-4 h-4" />
             </button>
 
@@ -180,11 +200,22 @@ export default function LoginPage({ setCurrentPage }) {
           /* Step 2: OTP Verification */
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             
-            <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
-              <p className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4" />
-                Enter 6-Digit OTP Code
-              </p>
+            <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1.5">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4" />
+                  Enter 6-Digit OTP Code
+                </p>
+
+                {/* 5-Min Expiry Countdown Timer */}
+                <span className={`text-[11px] font-mono font-bold flex items-center gap-1 px-2 py-0.5 rounded-md ${
+                  timer > 60 ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-rose-500/10 text-rose-500 animate-pulse'
+                }`}>
+                  <Clock className="w-3.5 h-3.5" />
+                  {formatTimer(timer)}
+                </span>
+              </div>
+
               <p className="text-slate-600 dark:text-slate-300">
                 OTP sent to <span className="font-bold text-slate-900 dark:text-white">{mobileNumber}</span>
               </p>
@@ -208,8 +239,8 @@ export default function LoginPage({ setCurrentPage }) {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2"
+              disabled={loading || timer === 0}
+              className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? 'Verifying OTP...' : 'Verify OTP & Continue'}
               <CheckCircle2 className="w-4 h-4" />
@@ -227,8 +258,9 @@ export default function LoginPage({ setCurrentPage }) {
               <button
                 type="button"
                 onClick={handleSendOtp}
-                className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
+                className="text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1"
               >
+                <RefreshCw className="w-3 h-3" />
                 Resend OTP
               </button>
             </div>

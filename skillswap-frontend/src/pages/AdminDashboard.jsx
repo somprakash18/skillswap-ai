@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Users, ShieldAlert, CheckCircle, XCircle, TrendingUp, Coins, Award, Search, Activity, Phone, Mail, Clock, Sparkles, UserCheck } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
+import ChartAnalyticsWidget from '../components/ChartAnalyticsWidget';
 
 export default function AdminDashboard() {
   const [search, setSearch] = useState('');
@@ -116,6 +117,9 @@ export default function AdminDashboard() {
           <span>Real-Time Tracker Active</span>
         </div>
       </div>
+
+      {/* Chart.js SaaS Analytics Engine */}
+      <ChartAnalyticsWidget />
 
       {/* Owner Real-Time Key Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

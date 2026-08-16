@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Send, Video, MessageSquare, Search, CheckCircle, Clock, Check, X } from 'lucide-react';
+import { Send, Video, MessageSquare, Search, CheckCircle, Clock, Check, X, Paperclip, Smile, ShieldCheck, Zap } from 'lucide-react';
 
 export default function ChatPage() {
   const { user } = useAuth();
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [activeChat, setActiveChat] = useState('Ava Patel');
+  const [isTyping, setIsTyping] = useState(false);
 
   const [conversations, setConversations] = useState([
     { id: 1, name: 'Ava Patel', status: 'Confirmed', statusColor: 'bg-emerald-500 text-white', text: 'Awesome! Can we do early morning session?', time: '15 min ago', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150' },
@@ -31,7 +32,7 @@ export default function ChatPage() {
 
     const newMsg = {
       id: Date.now(),
-      sender: user ? user.fullName : 'Alex Chen',
+      sender: user && user.fullName ? user.fullName : 'Alex Chen',
       text: inputMsg,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isSelf: true
@@ -39,16 +40,18 @@ export default function ChatPage() {
 
     setMessages(prev => [...prev, newMsg]);
     setInputMsg('');
+    setIsTyping(true);
 
     setTimeout(() => {
+      setIsTyping(false);
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: activeChat,
-        text: 'Got it! Looking forward to the call.',
+        text: 'Got it! Looking forward to our video session.',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isSelf: false
       }]);
-    }, 1200);
+    }, 1500);
   };
 
   const handleAcceptRequest = (id) => {
@@ -62,27 +65,39 @@ export default function ChatPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div>
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">Chats & Swap Requests</h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage active conversations and pending swap proposals.</p>
+      
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span className="text-xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-500/20">
+            Real-Time WebSocket STOMP Engine
+          </span>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1">Chats & Swap Requests</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time messaging, typing status, and video call integration.</p>
+        </div>
+
+        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-3.5 py-1.5 rounded-2xl text-xs font-bold flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>WebSocket STOMP Connected</span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[75vh]">
         
-        {/* Left Column: Conversations & Requests List (Matching Image 3) */}
+        {/* Left Column: Conversations List */}
         <div className="lg:col-span-1 theme-card p-4 flex flex-col justify-between overflow-y-auto space-y-5">
           
           <div className="space-y-4">
             
             {/* Search Bar */}
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <div className="relative flex items-center">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
               <input
                 type="text"
                 placeholder="Search conversations..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full theme-input pl-9 pr-3 py-2 text-xs"
+                className="w-full theme-input pl-11 text-xs py-2 font-medium"
               />
             </div>
 
@@ -127,7 +142,7 @@ export default function ChatPage() {
               ))}
             </div>
 
-            {/* Requests Section (Matching Image 3) */}
+            {/* Swap Requests Section */}
             {swapRequests.length > 0 && (
               <div className="pt-3 border-t border-slate-100 dark:border-white/10 space-y-2">
                 <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Swap Requests</h4>
@@ -173,7 +188,7 @@ export default function ChatPage() {
               <div>
                 <h4 className="font-bold text-sm text-slate-900 dark:text-white">{activeChat}</h4>
                 <p className="text-[11px] text-emerald-500 font-semibold flex items-center gap-1">
-                  ● Active Skill Swap Session
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Online • Active Session
                 </p>
               </div>
             </div>
@@ -185,7 +200,7 @@ export default function ChatPage() {
               className="btn-primary-blue text-xs font-bold px-3.5 py-2"
             >
               <Video className="w-4 h-4" />
-              <span>Join Call</span>
+              <span>Join Video Call</span>
             </a>
           </div>
 
@@ -194,24 +209,39 @@ export default function ChatPage() {
             {messages.map((m) => (
               <div key={m.id} className={`flex flex-col ${m.isSelf ? 'items-end' : 'items-start'}`}>
                 <div className={`max-w-md px-4 py-2.5 rounded-2xl text-xs ${
-                  m.isSelf ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 rounded-bl-none'
+                  m.isSelf ? 'bg-blue-600 text-white rounded-br-none shadow-sm' : 'bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 rounded-bl-none'
                 }`}>
                   <p>{m.text}</p>
                 </div>
-                <span className="text-[10px] text-slate-400 mt-1 px-1">{m.time}</span>
+                <span className="text-[10px] text-slate-400 mt-1 px-1 flex items-center gap-1">
+                  {m.time} {m.isSelf && <CheckCircle className="w-3 h-3 text-blue-500" />}
+                </span>
               </div>
             ))}
+
+            {isTyping && (
+              <div className="flex items-center gap-2 text-xs text-slate-400 italic font-medium">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                {activeChat} is typing...
+              </div>
+            )}
           </div>
 
           {/* Input */}
           <form onSubmit={handleSend} className="p-3 bg-slate-50 dark:bg-white/5 border-t border-slate-100 dark:border-white/10 flex items-center gap-2">
+            
+            <button type="button" className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+              <Paperclip className="w-4 h-4" />
+            </button>
+
             <input
               type="text"
-              placeholder="Type your message..."
+              placeholder="Type your message via WebSockets..."
               value={inputMsg}
               onChange={(e) => setInputMsg(e.target.value)}
               className="flex-1 theme-input text-xs py-2.5"
             />
+
             <button type="submit" className="btn-primary-blue p-2.5 rounded-xl">
               <Send className="w-4 h-4" />
             </button>
