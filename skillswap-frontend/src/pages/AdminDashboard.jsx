@@ -105,10 +105,10 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-black uppercase tracking-widest text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-            Founder & Owner Control Center
+            Founder & Owner Control Center — Som Prakash
           </span>
-          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">Real-Time User Sign-In Analytics</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Live tracking of who signed in, how many users registered, and OTP authentication logs.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">Welcome, Som Prakash!</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Live tracking of who signed in, how many users registered, and OTP authentication logs (prakashsom316@gmail.com).</p>
         </div>
 
         <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-2xl text-xs font-bold">
