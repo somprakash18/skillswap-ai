@@ -1,198 +1,234 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Coins, Flame, Calendar, Clock, ArrowUpRight, Video, CheckCircle2, Compass, MessageSquare, Award } from 'lucide-react';
-import GlassCard from '../components/GlassCard';
-import { AIRoadmapWidget, AIMentorMatcherWidget } from '../components/AIWidgets';
+import { Users, GraduationCap, BookOpen, Coins, Star, ArrowRight, MessageSquare, CheckCircle, Edit3, Flame, Sparkles } from 'lucide-react';
+import { AIRoadmapWidget } from '../components/AIWidgets';
 
-export default function Dashboard({ setCurrentPage, setSelectedSkill }) {
-  const { user, wallet } = useAuth();
-  const [activeTab, setActiveTab] = useState('upcoming');
+export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewSwap }) {
+  const { user } = useAuth();
+  const userName = user ? user.fullName.split(' ')[0].toLowerCase() : 'john';
 
-  const upcomingSessions = [
+  const bestMatches = [
     {
-      id: 1,
-      skillTitle: 'Spring Boot & Microservices Mastery',
-      mentorName: 'Priya Sharma',
-      date: 'Tomorrow at 02:00 PM EST',
-      status: 'CONFIRMED',
-      meetingLink: 'https://meet.jit.si/skillswap-session-spring-101',
-      creditCost: 15
+      id: 101,
+      name: 'Maya Chen',
+      verified: true,
+      distance: '2 km',
+      rating: 4.9,
+      reviews: 36,
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+      bio: "Looking to trade expertise! I'm offering my skills in Photography and I'm eager to learn Guitar in return. Let's connect!",
+      offers: ['Portrait Photography', 'DSLR Camera Tips', 'Lighting Techniques'],
+      lookingFor: ['Guitar Lessons', 'Sourdough Baking', 'Advanced Spanish']
     },
     {
-      id: 2,
-      skillTitle: 'Fine-Tuning LLMs with PyTorch',
-      mentorName: 'Marcus Vance',
-      date: 'Aug 18 at 04:30 PM EST',
-      status: 'PENDING',
-      meetingLink: 'https://meet.jit.si/skillswap-session-ai-303',
-      creditCost: 25
+      id: 102,
+      name: 'Sophia Ansari',
+      verified: true,
+      distance: '3 km',
+      rating: 4.8,
+      reviews: 42,
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      bio: 'Versatile UI/UX designer and frontend dev specializing in React, Tailwind, and Framer Motion animations.',
+      offers: ['UI/UX Design Systems', 'Figma Prototyping', 'React Hooks'],
+      lookingFor: ['Spring Boot Backend', 'Docker & Kubernetes', 'Python Data Science']
     }
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+    <div className="space-y-8 pb-12">
       
-      {/* Welcome Banner */}
-      <div className="glass-card rounded-3xl p-6 md:p-8 relative overflow-hidden border border-indigo-500/20">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
+      {/* Royal Blue Welcome Banner (Matching Image 1 & 4) */}
+      <div className="bg-banner-blue rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
+        <div className="max-w-2xl space-y-2 relative z-10">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            Welcome back, {userName}!
+          </h1>
+          <p className="text-blue-100 text-sm sm:text-base leading-relaxed">
+            Ready to exchange skills and grow together? Find your perfect match today.
+          </p>
+        </div>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+        {/* Floating Accent Shapes */}
+        <div className="absolute top-1/2 right-6 -translate-y-1/2 hidden md:block opacity-30 pointer-events-none">
+          <Sparkles className="w-32 h-32 text-white" />
+        </div>
+      </div>
+
+      {/* 4 Stat Cards Grid (Matching Image 1) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        
+        {/* Total Users */}
+        <div className="theme-card flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+            <Users className="w-6 h-6" />
+          </div>
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-xs font-semibold">
-                {user.college || 'Stanford University'} Student
-              </span>
-              <span className="flex items-center gap-1 text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
-                <Flame className="w-3.5 h-3.5 fill-amber-400" />
-                {user.streakDays || 7} Day Streak
-              </span>
-            </div>
-            <h1 className="text-3xl font-extrabold text-white">
-              Welcome back, <span className="gradient-text">{user.fullName}</span> 👋
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">
-              You have <span className="text-amber-400 font-bold">{wallet.balance} credits</span> available for booking sessions or generating AI roadmaps.
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Total Users</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">50+</h3>
+          </div>
+        </div>
+
+        {/* Skills I Teach */}
+        <div className="theme-card flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <GraduationCap className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Skills I Teach</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">2</h3>
+          </div>
+        </div>
+
+        {/* Skills I Learn */}
+        <div className="theme-card flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+            <BookOpen className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Skills I Learn</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">1</h3>
+          </div>
+        </div>
+
+        {/* Potential Matches */}
+        <div className="theme-card flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <Coins className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Potential Matches</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-0.5">4</h3>
+          </div>
+        </div>
+
+      </div>
+
+      {/* 2 Primary Action Cards (Matching Image 1) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Card 1: Update Your Skills */}
+        <div className="theme-card flex flex-col justify-between space-y-4">
+          <div>
+            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Update Your Skills</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              Keep your teaching and learning skills up to date for better matches.
             </p>
           </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => setCurrentPage('explore')}
-              className="px-5 py-2.5 rounded-xl gradient-btn text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 flex items-center gap-2"
-            >
-              <Compass className="w-4 h-4" />
-              Book Mentorship
-            </button>
-            <button
-              onClick={() => setCurrentPage('wallet')}
-              className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-sm font-semibold border border-white/10"
-            >
-              Add Credits
-            </button>
-          </div>
+          <button
+            onClick={() => setCurrentPage('profile')}
+            className="btn-primary-blue w-fit text-xs px-5 py-2.5"
+          >
+            Edit Skills &gt;
+          </button>
         </div>
+
+        {/* Card 2: Find Matches */}
+        <div className="theme-card flex flex-col justify-between space-y-4">
+          <div>
+            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Find Matches</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+              Discover people who want to learn what you teach and vice versa.
+            </p>
+          </div>
+          <button
+            onClick={() => setCurrentPage('matches')}
+            className="btn-success-green w-fit text-xs px-5 py-2.5"
+          >
+            View Matches &gt;
+          </button>
+        </div>
+
       </div>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Column - Sessions & Activity */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Upcoming Sessions Card */}
-          <GlassCard>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-indigo-400" />
-                Your Mentorship Sessions
-              </h3>
-              <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
+      {/* Your Best Match ⭐ Section (Matching Image 1 & 2) */}
+      <div className="space-y-4 pt-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            Your Best Match <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+          </h2>
+          <button onClick={() => setCurrentPage('matches')} className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
+            View All Matches &rarr;
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {bestMatches.map((match) => (
+            <div key={match.id} className="theme-card space-y-4">
+              
+              {/* Profile Header */}
+              <div className="flex items-center gap-3">
+                <img
+                  src={match.avatar}
+                  alt={match.name}
+                  className="w-12 h-12 rounded-2xl object-cover"
+                />
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="font-extrabold text-base text-slate-900 dark:text-white">{match.name}</h4>
+                    {match.verified && <CheckCircle className="w-4 h-4 text-blue-500 fill-blue-500 text-white" />}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <span className="flex items-center gap-1 text-amber-500 font-bold">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      {match.rating} ({match.reviews})
+                    </span>
+                    <span>•</span>
+                    <span>{match.distance}</span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                {match.bio}
+              </p>
+
+              {/* Offers Tags */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Offers...</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {match.offers.map((off, i) => (
+                    <span key={i} className="tag-offer">{off}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Looking For Tags */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-500 block">Looking For...</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {match.lookingFor.map((look, i) => (
+                    <span key={i} className="tag-looking">{look}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-white/5">
                 <button
-                  onClick={() => setActiveTab('upcoming')}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold ${activeTab === 'upcoming' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+                  onClick={() => setCurrentPage('chat')}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-50 dark:hover:bg-white/5 flex items-center justify-center gap-1.5"
                 >
-                  Upcoming
+                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                  Chat to Swap
                 </button>
                 <button
-                  onClick={() => setActiveTab('history')}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold ${activeTab === 'history' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}
+                  onClick={() => {
+                    setSelectedSkill({ id: match.id, title: match.offers[0], mentorName: match.name, creditCost: 10 });
+                    setCurrentPage('skill-detail');
+                  }}
+                  className="flex-1 btn-primary-blue text-xs font-bold py-2.5"
                 >
-                  History
+                  Confirm Swap
                 </button>
               </div>
+
             </div>
-
-            <div className="space-y-3">
-              {upcomingSessions.map((session) => (
-                <div key={session.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase border ${
-                        session.status === 'CONFIRMED' 
-                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' 
-                          : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
-                      }`}>
-                        {session.status}
-                      </span>
-                      <h4 className="font-semibold text-base text-white mt-1.5">{session.skillTitle}</h4>
-                      <p className="text-xs text-slate-400 mt-0.5">Mentor: {session.mentorName}</p>
-                    </div>
-                    <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg">
-                      {session.creditCost} Credits
-                    </span>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-2 border-t border-white/5 text-xs text-slate-400 gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-indigo-400" />
-                      <span>{session.date}</span>
-                    </div>
-
-                    <div className="flex gap-2 w-full sm:w-auto">
-                      <button
-                        onClick={() => setCurrentPage('chat')}
-                        className="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 font-medium flex items-center justify-center gap-1"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        Chat
-                      </button>
-                      <a
-                        href={session.meetingLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold flex items-center justify-center gap-1"
-                      >
-                        <Video className="w-3.5 h-3.5" />
-                        Join Call
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-
-          {/* AI Learning Hub Widget */}
-          <AIRoadmapWidget />
-
+          ))}
         </div>
-
-        {/* Right Column - AI Matcher & Badges */}
-        <div className="space-y-6">
-          
-          {/* AI Mentor Matcher */}
-          <AIMentorMatcherWidget onSelectMentor={(m) => {
-            setSelectedSkill({ id: m.skillId, title: m.skillTitle, creditCost: m.creditCost, mentorName: m.mentorName });
-            setCurrentPage('skill-detail');
-          }} />
-
-          {/* Gamification Achievements */}
-          <GlassCard>
-            <h3 className="font-bold text-base text-white mb-3 flex items-center gap-2">
-              <Award className="w-4 h-4 text-amber-400" />
-              Badges & Milestones
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { title: 'Top Mentor', desc: '4.9+ Star Rating', icon: '⭐', unlocked: true },
-                { title: '7-Day Streak', desc: 'Active daily', icon: '🔥', unlocked: true },
-                { title: 'AI Scholar', desc: '10 Roadmaps generated', icon: '🤖', unlocked: true },
-                { title: 'Century Master', desc: '100 Credits earned', icon: '💰', unlocked: false },
-              ].map((badge, idx) => (
-                <div key={idx} className={`p-3 rounded-xl border text-center ${
-                  badge.unlocked ? 'bg-indigo-950/40 border-indigo-500/30' : 'bg-white/5 border-white/5 opacity-50'
-                }`}>
-                  <span className="text-2xl">{badge.icon}</span>
-                  <p className="font-semibold text-xs text-white mt-1">{badge.title}</p>
-                  <p className="text-[10px] text-slate-400">{badge.desc}</p>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-
-        </div>
-
       </div>
+
+      {/* AI Roadmap Generator */}
+      <AIRoadmapWidget />
 
     </div>
   );

@@ -1,14 +1,27 @@
 import React, { useState } from 'react';
-import { Send, Video, Phone, Paperclip, MoreVertical, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import GlassCard from '../components/GlassCard';
+import { Send, Video, MessageSquare, Search, CheckCircle, Clock, Check, X } from 'lucide-react';
 
 export default function ChatPage() {
   const { user } = useAuth();
+  const [filter, setFilter] = useState('All');
+  const [search, setSearch] = useState('');
+  const [activeChat, setActiveChat] = useState('Ava Patel');
+
+  const [conversations, setConversations] = useState([
+    { id: 1, name: 'Ava Patel', status: 'Confirmed', statusColor: 'bg-emerald-500 text-white', text: 'Awesome! Can we do early morning session?', time: '15 min ago', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150' },
+    { id: 2, name: 'Ava Meyer', status: 'Pending', statusColor: 'bg-amber-500 text-white', text: 'You Set works! Bring your guitar?', time: 'Just Now', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150' },
+    { id: 3, name: 'Leo Martinez', status: 'In Review', statusColor: 'bg-blue-600 text-white', text: 'Great! I can print those brackets.', time: '5 min ago', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' }
+  ]);
+
+  const [swapRequests, setSwapRequests] = useState([
+    { id: 101, name: 'Noah Kim', proposal: 'Frontend ↔ Guitar', time: '15 min ago', avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150' }
+  ]);
+
   const [messages, setMessages] = useState([
-    { id: 1, sender: 'Priya Sharma', text: 'Hi Alex! Looking forward to our Spring Boot session tomorrow.', time: '10:14 AM', isSelf: false },
-    { id: 2, sender: 'Alex Chen', text: 'Hey Priya! Absolutely, I have prepared code examples for JWT security setup.', time: '10:16 AM', isSelf: true },
-    { id: 3, sender: 'Priya Sharma', text: 'Awesome! Should I review any specific docs beforehand?', time: '10:18 AM', isSelf: false }
+    { id: 1, sender: 'Ava Patel', text: 'Hi Alex! Looking forward to our Spring Boot & Guitar session.', time: '10:14 AM', isSelf: false },
+    { id: 2, sender: 'Alex Chen', text: 'Hey Ava! Absolutely, I have prepared code examples and guitar chords.', time: '10:16 AM', isSelf: true },
+    { id: 3, sender: 'Ava Patel', text: 'Awesome! Can we do early morning session tomorrow?', time: '10:18 AM', isSelf: false }
   ]);
   const [inputMsg, setInputMsg] = useState('');
 
@@ -18,7 +31,7 @@ export default function ChatPage() {
 
     const newMsg = {
       id: Date.now(),
-      sender: user.fullName,
+      sender: user ? user.fullName : 'Alex Chen',
       text: inputMsg,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isSelf: true
@@ -27,51 +40,141 @@ export default function ChatPage() {
     setMessages(prev => [...prev, newMsg]);
     setInputMsg('');
 
-    // Simulated instant reply
     setTimeout(() => {
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
-        sender: 'Priya Sharma',
-        text: 'Got it! See you in the meeting room tomorrow.',
+        sender: activeChat,
+        text: 'Got it! Looking forward to the call.',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isSelf: false
       }]);
     }, 1200);
   };
 
-  return (
-    <div className="max-w-6xl mx-auto px-4 lg:px-8 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-[75vh]">
-        
-        {/* Active Conversations Sidebar */}
-        <GlassCard className="md:col-span-1 p-4 flex flex-col justify-between overflow-y-auto">
-          <div>
-            <h3 className="font-bold text-sm text-white mb-4 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-indigo-400" />
-              Active Chats
-            </h3>
-            <div className="space-y-2">
-              <div className="p-3 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center gap-3 cursor-pointer">
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Priya" className="w-10 h-10 rounded-xl object-cover" />
-                <div className="overflow-hidden">
-                  <h4 className="font-semibold text-xs text-white">Priya Sharma</h4>
-                  <p className="text-[11px] text-indigo-300 truncate">Spring Boot Session</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </GlassCard>
+  const handleAcceptRequest = (id) => {
+    setSwapRequests(prev => prev.filter(r => r.id !== id));
+    alert('Swap Request Accepted! Connection added.');
+  };
 
-        {/* Conversation View */}
-        <GlassCard className="md:col-span-3 p-0 flex flex-col overflow-hidden border border-white/10">
+  const handleDeclineRequest = (id) => {
+    setSwapRequests(prev => prev.filter(r => r.id !== id));
+  };
+
+  return (
+    <div className="space-y-6 pb-12">
+      <div>
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">Chats & Swap Requests</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Manage active conversations and pending swap proposals.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[75vh]">
+        
+        {/* Left Column: Conversations & Requests List (Matching Image 3) */}
+        <div className="lg:col-span-1 theme-card p-4 flex flex-col justify-between overflow-y-auto space-y-5">
           
-          {/* Chat Header */}
-          <div className="p-4 bg-white/5 border-b border-white/10 flex justify-between items-center">
+          <div className="space-y-4">
+            
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search conversations..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full theme-input pl-9 pr-3 py-2 text-xs"
+              />
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex gap-1.5 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+              {['All', 'Pending', 'Confirmed'].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`flex-1 py-1 rounded-lg text-[11px] font-bold transition ${
+                    filter === f ? 'bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs' : 'text-slate-500'
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+
+            {/* Active Conversations */}
+            <div className="space-y-2">
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active Conversations</h4>
+              {conversations.map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => setActiveChat(c.name)}
+                  className={`p-3 rounded-2xl flex items-center justify-between cursor-pointer transition ${
+                    activeChat === c.name ? 'bg-blue-50 dark:bg-blue-600/20 border border-blue-200 dark:border-blue-500/30' : 'bg-slate-50 dark:bg-white/5 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 overflow-hidden">
+                    <img src={c.avatar} alt={c.name} className="w-10 h-10 rounded-xl object-cover" />
+                    <div className="truncate">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white">{c.name}</span>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-md ${c.statusColor}`}>{c.status}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{c.text}</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-400 whitespace-nowrap ml-1">{c.time}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Requests Section (Matching Image 3) */}
+            {swapRequests.length > 0 && (
+              <div className="pt-3 border-t border-slate-100 dark:border-white/10 space-y-2">
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Swap Requests</h4>
+                {swapRequests.map((req) => (
+                  <div key={req.id} className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <img src={req.avatar} alt={req.name} className="w-9 h-9 rounded-xl object-cover" />
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white">{req.name}</span>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">Proposed swap: <span className="font-semibold text-blue-600 dark:text-blue-400">{req.proposal}</span></p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={() => handleAcceptRequest(req.id)}
+                        className="flex-1 btn-primary-blue text-xs font-bold py-1.5"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleDeclineRequest(req.id)}
+                        className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs py-1.5 rounded-xl transition"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+          </div>
+        </div>
+
+        {/* Right Column: Active Conversation Feed */}
+        <div className="lg:col-span-2 theme-card p-0 flex flex-col justify-between overflow-hidden">
+          
+          {/* Header */}
+          <div className="p-4 bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10 flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt="Priya" className="w-10 h-10 rounded-xl object-cover" />
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150" alt={activeChat} className="w-10 h-10 rounded-xl object-cover" />
               <div>
-                <h4 className="font-bold text-sm text-white">Priya Sharma</h4>
-                <p className="text-[11px] text-emerald-400 font-medium">● Online — Mentorship Chat</p>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">{activeChat}</h4>
+                <p className="text-[11px] text-emerald-500 font-semibold flex items-center gap-1">
+                  ● Active Skill Swap Session
+                </p>
               </div>
             </div>
 
@@ -79,10 +182,10 @@ export default function ChatPage() {
               href="https://meet.jit.si/skillswap-session-spring-101"
               target="_blank"
               rel="noreferrer"
-              className="px-3.5 py-1.5 rounded-xl gradient-btn text-white text-xs font-semibold flex items-center gap-1.5"
+              className="btn-primary-blue text-xs font-bold px-3.5 py-2"
             >
               <Video className="w-4 h-4" />
-              Join Call
+              <span>Join Call</span>
             </a>
           </div>
 
@@ -91,7 +194,7 @@ export default function ChatPage() {
             {messages.map((m) => (
               <div key={m.id} className={`flex flex-col ${m.isSelf ? 'items-end' : 'items-start'}`}>
                 <div className={`max-w-md px-4 py-2.5 rounded-2xl text-xs ${
-                  m.isSelf ? 'bg-indigo-600 text-white rounded-br-none' : 'bg-white/10 text-slate-200 rounded-bl-none'
+                  m.isSelf ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-200 rounded-bl-none'
                 }`}>
                   <p>{m.text}</p>
                 </div>
@@ -100,21 +203,21 @@ export default function ChatPage() {
             ))}
           </div>
 
-          {/* Chat Input */}
-          <form onSubmit={handleSend} className="p-3 bg-white/5 border-t border-white/10 flex items-center gap-2">
+          {/* Input */}
+          <form onSubmit={handleSend} className="p-3 bg-slate-50 dark:bg-white/5 border-t border-slate-100 dark:border-white/10 flex items-center gap-2">
             <input
               type="text"
               placeholder="Type your message..."
               value={inputMsg}
               onChange={(e) => setInputMsg(e.target.value)}
-              className="flex-1 glass-input px-4 py-2.5 rounded-xl text-xs"
+              className="flex-1 theme-input text-xs py-2.5"
             />
-            <button type="submit" className="p-2.5 rounded-xl gradient-btn text-white">
+            <button type="submit" className="btn-primary-blue p-2.5 rounded-xl">
               <Send className="w-4 h-4" />
             </button>
           </form>
 
-        </GlassCard>
+        </div>
 
       </div>
     </div>

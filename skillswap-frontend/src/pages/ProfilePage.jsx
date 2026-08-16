@@ -1,106 +1,110 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, GraduationCap, Flame, Star, Coins, Edit3, Award, CheckCircle2, Copy } from 'lucide-react';
-import GlassCard from '../components/GlassCard';
+import { User, MapPin, CheckCircle, Star, Edit3, Share2, Settings, Award, CheckCircle2 } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  const handleCopyReferral = () => {
-    navigator.clipboard.writeText(user.referralCode || 'ALEX2026');
+  const profileData = {
+    name: user ? user.fullName : 'Albert Jones',
+    location: 'Toronto, Canada',
+    verified: true,
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
+    bio: 'Aspiring photographer specializing in portraiture and landscape photography. Eager to collaborate and explore new creative avenues.',
+    stats: { completed: 12, ongoing: 3, mutuals: 2 },
+    offers: ['Portrait Photography', 'Basic DSLR Tips', 'Lighting Tips', 'Composition Techniques'],
+    lookingFor: ['Guitar Lessons', 'Spring Boot Backend', 'UI/UX Wireframing']
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+    <div className="max-w-2xl mx-auto space-y-6 pb-16">
       
-      {/* Profile Header */}
-      <GlassCard className="border border-indigo-500/20">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-          <img
-            src={user.avatarUrl}
-            alt={user.fullName}
-            className="w-24 h-24 rounded-3xl object-cover border-2 border-indigo-500/40 shadow-xl"
-          />
-          <div className="flex-1 text-center sm:text-left space-y-2">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-              <div>
-                <h1 className="text-2xl font-extrabold text-white">{user.fullName}</h1>
-                <p className="text-xs text-indigo-400 font-semibold flex items-center justify-center sm:justify-start gap-1 mt-0.5">
-                  <GraduationCap className="w-4 h-4" />
-                  {user.college || 'Stanford University'}
-                </p>
-              </div>
-              <button className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center gap-1.5">
-                <Edit3 className="w-3.5 h-3.5" />
-                Edit Profile
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-              {user.bio || 'Full-stack software developer passionate about React, Spring Boot, and AI architectures.'}
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-2 text-xs">
-              <span className="flex items-center gap-1 text-amber-300 font-bold">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                {user.rating || 4.9} Rating
-              </span>
-              <span className="flex items-center gap-1 text-amber-400 font-bold">
-                <Flame className="w-4 h-4 fill-amber-400" />
-                {user.streakDays || 7} Day Streak
-              </span>
-              <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                <CheckCircle2 className="w-4 h-4" />
-                Verified Student
-              </span>
-            </div>
-          </div>
-        </div>
-      </GlassCard>
-
-      {/* Referral Link & Skills Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Profile Card (Matching Image 3) */}
+      <div className="theme-card p-0 overflow-hidden relative shadow-xl">
         
-        {/* Referral Card */}
-        <GlassCard className="md:col-span-1 border border-purple-500/20 space-y-3">
-          <h3 className="font-bold text-base text-white">Your Referral Code</h3>
-          <p className="text-xs text-slate-400">Share with classmates to earn +25 credits per signup.</p>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 font-mono text-sm text-indigo-300 font-bold">
-            <span>{user.referralCode || 'ALEX2026'}</span>
-            <button onClick={handleCopyReferral} className="p-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition">
-              <Copy className="w-4 h-4" />
+        {/* Cover Hero Photo */}
+        <div className="h-64 relative overflow-hidden bg-gradient-to-r from-blue-500 to-indigo-600">
+          <img
+            src={profileData.avatar}
+            alt={profileData.name}
+            className="w-full h-full object-cover opacity-90"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+          {/* Action Icons Top Right */}
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button className="p-2 rounded-xl bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition">
+              <Settings className="w-4 h-4" />
+            </button>
+            <button onClick={handleShare} className="p-2 rounded-xl bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition">
+              <Share2 className="w-4 h-4" />
             </button>
           </div>
-          {copied && <p className="text-[11px] text-emerald-400 font-semibold">Referral code copied to clipboard!</p>}
-        </GlassCard>
+        </div>
 
-        {/* Skills Offered & Wanted */}
-        <GlassCard className="md:col-span-2 space-y-4">
-          <div>
-            <h3 className="font-bold text-base text-white mb-2">Skills You Offer (Mentoring)</h3>
+        {/* Profile Content */}
+        <div className="p-6 space-y-6 -mt-12 relative z-10">
+          
+          {/* Avatar & Name */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white">{profileData.name}</h1>
+              {profileData.verified && <CheckCircle className="w-5 h-5 text-blue-500 fill-blue-500 text-white" />}
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-blue-500" />
+              {profileData.location}
+            </p>
+          </div>
+
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            {profileData.bio}
+          </p>
+
+          {/* 3 Stat Cards Row (Matching Image 3) */}
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+              <p className="text-lg font-black text-slate-900 dark:text-white">{profileData.stats.completed}</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase">Completed</p>
+            </div>
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+              <p className="text-lg font-black text-blue-600 dark:text-blue-400">{profileData.stats.ongoing}</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase">Ongoing</p>
+            </div>
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+              <p className="text-lg font-black text-emerald-500">{profileData.stats.mutuals}</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase">Mutuals</p>
+            </div>
+          </div>
+
+          {/* Offers Tags */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Offers...</h3>
             <div className="flex flex-wrap gap-2">
-              {['Spring Boot & Microservices', 'React.js State Management', 'REST API Security'].map((s, i) => (
-                <span key={i} className="px-3 py-1 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold">
-                  {s}
-                </span>
+              {profileData.offers.map((off, i) => (
+                <span key={i} className="tag-offer text-xs">{off}</span>
               ))}
             </div>
           </div>
 
-          <div className="pt-3 border-t border-white/10">
-            <h3 className="font-bold text-base text-white mb-2">Skills You Want to Learn</h3>
+          {/* Looking For Tags */}
+          <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-white/5">
+            <h3 className="text-xs font-extrabold uppercase tracking-wider text-blue-500">Looking For...</h3>
             <div className="flex flex-wrap gap-2">
-              {['Docker & Kubernetes Deployment', 'PyTorch LLM Fine-Tuning'].map((s, i) => (
-                <span key={i} className="px-3 py-1 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-semibold">
-                  {s}
-                </span>
+              {profileData.lookingFor.map((look, i) => (
+                <span key={i} className="tag-looking text-xs">{look}</span>
               ))}
             </div>
           </div>
-        </GlassCard>
+
+        </div>
 
       </div>
 
