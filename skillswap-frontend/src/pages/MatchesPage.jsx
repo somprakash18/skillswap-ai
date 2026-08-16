@@ -127,9 +127,12 @@ export default function MatchesPage({ setCurrentPage, setSelectedSkill }) {
   ];
 
   useEffect(() => {
-    // Load dynamically added teacher listings from localStorage
-    const stored = JSON.parse(localStorage.getItem('teacher_listings') || '[]');
-    setTeacherListings(stored);
+    try {
+      const stored = JSON.parse(localStorage.getItem('teacher_listings') || '[]');
+      setTeacherListings(Array.isArray(stored) ? stored : []);
+    } catch (e) {
+      setTeacherListings([]);
+    }
   }, []);
 
   const allListings = [...teacherListings, ...baseMatchesList];

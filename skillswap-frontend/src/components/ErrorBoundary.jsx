@@ -16,10 +16,9 @@ export default class ErrorBoundary extends React.Component {
   }
 
   handleReset = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.clear();
     this.setState({ hasError: false, error: null });
-    window.location.href = '/';
+    window.location.reload();
   };
 
   render() {
@@ -38,6 +37,12 @@ export default class ErrorBoundary extends React.Component {
                 An unexpected state occurred. Click below to clear cache and restore the application cleanly.
               </p>
             </div>
+
+            {this.state.error && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[11px] font-mono text-left max-h-32 overflow-y-auto break-all">
+                {this.state.error.toString()}
+              </div>
+            )}
 
             <button
               onClick={this.handleReset}
