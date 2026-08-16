@@ -63,8 +63,20 @@ export default function Sidebar({ currentPage, setCurrentPage, isDarkMode, setIs
       </div>
 
       {/* Footer Controls */}
-      <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/10">
+      <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-white/10">
         
+        {/* Teacher / Mentor Portal Shortcut */}
+        <button
+          onClick={() => setCurrentPage('teacher-signup')}
+          className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold transition border border-blue-500/20"
+        >
+          <span className="flex items-center gap-2">
+            <GraduationCap className="w-4 h-4 text-blue-500" />
+            <span>Teacher Portal</span>
+          </span>
+          <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black">MENTOR</span>
+        </button>
+
         {/* Founder Portal Shortcut */}
         <button
           onClick={() => setCurrentPage('founder-portal')}

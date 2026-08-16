@@ -19,6 +19,7 @@ import CertificatesPage from './pages/CertificatesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import FounderPortalPage from './pages/FounderPortalPage';
+import TeacherPortalPage from './pages/TeacherPortalPage';
 import PricingPage from './pages/PricingPage';
 import FAQPage from './pages/FAQPage';
 import ContactPage from './pages/ContactPage';
@@ -52,6 +53,8 @@ function AppContent() {
         return <RegisterPage setCurrentPage={setCurrentPage} />;
       case 'founder-portal':
         return <FounderPortalPage setCurrentPage={setCurrentPage} />;
+      case 'teacher-signup':
+        return <TeacherPortalPage setCurrentPage={setCurrentPage} />;
       case 'dashboard':
         return (
           <Dashboard
@@ -99,7 +102,7 @@ function AppContent() {
     }
   };
 
-  if (['landing', 'login', 'register', 'founder-portal'].includes(currentPage)) {
+  if (['landing', 'login', 'register', 'founder-portal', 'teacher-signup'].includes(currentPage)) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0b0914] text-slate-900 dark:text-white">
         {renderMainView()}
