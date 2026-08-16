@@ -1,80 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-family: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
   body {
-    @apply bg-slate-50 text-slate-900 font-sans overflow-x-hidden antialiased;
+    @apply bg-[#F8FAFC] text-[#0F172A] font-sans antialiased selection:bg-blue-500/20 selection:text-blue-600;
   }
+
   .dark body {
-    @apply bg-[#0b0914] text-slate-100;
+    @apply bg-[#0F172A] text-[#F8FAFC];
   }
 }
 
-/* Custom Palette & Design System */
-.bg-banner-blue {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
-}
-
-.card-shadow {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-}
-
-.dark .card-shadow {
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
+/* Linear / Notion / Vercel Glass & Shadow Tokens */
 .theme-card {
-  @apply bg-white border border-slate-100 rounded-2xl p-5 card-shadow transition-all duration-200;
+  @apply bg-white dark:bg-[#1E293B] border border-slate-200/70 dark:border-slate-700/60 rounded-[24px] p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200;
 }
 
-.dark .theme-card {
-  background: rgba(26, 23, 52, 0.6);
-  backdrop-filter: blur(12px);
-  border-color: rgba(255, 255, 255, 0.07);
-}
-
-.theme-card:hover {
-  @apply border-blue-200 shadow-md;
-}
-
-.dark .theme-card:hover {
-  border-color: rgba(99, 102, 241, 0.4);
+.theme-card-subtle {
+  @apply bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/40 rounded-[20px] p-5 transition-all duration-200;
 }
 
 .theme-input {
-  @apply bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-xl px-4 py-3 text-sm transition-all focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-400/50 focus:placeholder:opacity-0;
+  @apply bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-[#0F172A] dark:text-[#F8FAFC] rounded-xl px-4 py-2.5 text-sm transition-all focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 placeholder:text-slate-400 focus:placeholder:opacity-0;
 }
 
+/* Clean Button System */
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center gap-2 text-sm disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 active:scale-[0.98] text-slate-700 dark:text-slate-200 font-medium px-4 py-2.5 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 text-sm;
+}
+
+.btn-ghost {
+  @apply hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium px-3.5 py-2 rounded-xl transition-all flex items-center justify-center gap-2 text-sm;
+}
+
+.btn-danger {
+  @apply bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 font-medium px-3 py-2 rounded-xl transition-all text-xs flex items-center justify-center gap-1.5;
+}
+
+/* Legacy Helpers for Compatibility */
 .btn-primary-blue {
-  @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-blue-500/30 flex items-center justify-center gap-2;
+  @apply btn-primary;
 }
 
 .btn-success-green {
-  @apply bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm shadow-emerald-500/30 flex items-center justify-center gap-2;
+  @apply bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 text-sm;
 }
 
 .btn-danger-red {
-  @apply bg-rose-500 hover:bg-rose-600 text-white font-semibold px-4 py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 text-xs;
+  @apply btn-danger;
 }
 
 .tag-offer {
-  @apply bg-slate-100 text-slate-700 text-[11px] font-medium px-3 py-1 rounded-lg border border-slate-200;
-}
-
-.dark .tag-offer {
-  @apply bg-white/5 text-slate-200 border-white/10;
+  @apply bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium px-2.5 py-1 rounded-lg border border-slate-200/60 dark:border-slate-700/60;
 }
 
 .tag-looking {
-  @apply bg-blue-50 text-blue-700 text-[11px] font-medium px-3 py-1 rounded-lg border border-blue-100;
+  @apply bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-xs font-medium px-2.5 py-1 rounded-lg border border-blue-100 dark:border-blue-900/40;
 }
 
-.dark .tag-looking {
-  @apply bg-indigo-500/10 text-indigo-300 border-indigo-500/20;
-}
-
-/* Custom Scrollbar */
+/* Sleek Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -83,9 +78,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: #CBD5E1;
+  border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: #334155;
 }
