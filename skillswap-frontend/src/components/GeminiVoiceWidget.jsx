@@ -64,11 +64,11 @@ export default function GeminiVoiceWidget() {
 
   return (
     <>
-      {/* Floating Bottom-Left Voice Trigger Button */}
+      {/* Floating Voice Trigger Button — Placed cleanly at left-72 (288px) to clear the 256px sidebar */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 left-6 z-50 group flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-2xl hover:scale-105 transition-all duration-200 border border-white/20"
+          className="fixed bottom-6 left-4 sm:left-72 z-40 group flex items-center gap-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-2xl hover:scale-105 transition-all duration-200 border border-white/20"
         >
           <div className="relative">
             <Mic className="w-5 h-5 animate-pulse text-emerald-200" />
@@ -78,9 +78,9 @@ export default function GeminiVoiceWidget() {
         </button>
       )}
 
-      {/* Expandable Voice AI Dialog Modal */}
+      {/* Expandable Voice AI Dialog Modal — Positioned at left-72 (288px) clear of left sidebar */}
       {isOpen && (
-        <div className="fixed bottom-6 left-6 z-50 w-[92vw] sm:w-[420px] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-2xl rounded-[32px] p-6 shadow-2xl border border-slate-200/80 dark:border-slate-800 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed bottom-6 left-4 sm:left-72 z-50 w-[92vw] sm:w-[420px] bg-white/98 dark:bg-[#0F172A]/98 backdrop-blur-2xl rounded-[32px] p-6 shadow-2xl border border-slate-200/80 dark:border-slate-800 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-200">
           
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-200/60 dark:border-slate-800">
