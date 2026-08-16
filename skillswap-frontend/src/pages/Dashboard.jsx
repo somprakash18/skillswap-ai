@@ -1,9 +1,10 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Users, GraduationCap, BookOpen, Coins, Star, ArrowRight, MessageSquare, CheckCircle, Sparkles, Flame, ShieldCheck, Zap, FileText } from 'lucide-react';
+import { Users, GraduationCap, BookOpen, Coins, Star, ArrowRight, MessageSquare, CheckCircle, Sparkles, Flame, ShieldCheck, Zap, FileText, BarChart2, CreditCard, Radio } from 'lucide-react';
 import { AIRoadmapWidget } from '../components/AIWidgets';
 import ActiveLearningWidget from '../components/ActiveLearningWidget';
 import CourseColumnsWidget from '../components/CourseColumnsWidget';
+import ChartAnalyticsWidget from '../components/ChartAnalyticsWidget';
 
 export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewSwap, onOpenVideoCall }) {
   const { user } = useAuth();
@@ -40,6 +41,62 @@ export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewS
   return (
     <div className="space-y-8 pb-16">
       
+      {/* 🚀 Production SaaS Master Control Bar */}
+      <div className="p-4 rounded-3xl bg-slate-900 text-white shadow-xl space-y-3 border border-slate-800">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
+              Live Production SaaS Architecture Active
+            </span>
+          </div>
+          <span className="text-[10px] text-slate-400 font-mono">Spring Boot 3 + MySQL 8.0 + WebSockets STOMP</span>
+        </div>
+
+        {/* Quick Portal Switcher Pills */}
+        <div className="flex flex-wrap gap-2 pt-1">
+          <button
+            onClick={() => setCurrentPage('teacher-signup')}
+            className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <GraduationCap className="w-4 h-4 text-blue-200" />
+            <span>🚀 Teacher Signup Portal</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('founder-portal')}
+            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <ShieldCheck className="w-4 h-4 text-amber-200" />
+            <span>👑 Som Prakash Founder Control</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('materials')}
+            className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <FileText className="w-4 h-4 text-purple-200" />
+            <span>📚 JEE/NEET Question Bank PDFs</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('chat')}
+            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <Radio className="w-4 h-4 text-emerald-200" />
+            <span>💬 WebSockets Live Chat</span>
+          </button>
+
+          <button
+            onClick={() => setCurrentPage('wallet')}
+            className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <CreditCard className="w-4 h-4 text-indigo-200" />
+            <span>💳 Razorpay Credit Top-Up</span>
+          </button>
+        </div>
+      </div>
+
       {/* Premium Hero Welcome Banner */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-8 sm:p-10 text-white shadow-2xl shadow-blue-500/20 relative overflow-hidden">
         
@@ -97,6 +154,9 @@ export default function Dashboard({ setCurrentPage, setSelectedSkill, onOpenNewS
 
         </div>
       </div>
+
+      {/* Real-Time Chart.js SaaS Analytics Engine */}
+      <ChartAnalyticsWidget />
 
       {/* 4 Enhanced Stat Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
