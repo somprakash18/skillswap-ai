@@ -1,27 +1,79 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { Sparkles, Mail, Phone, User, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 
 export default function LoginPage({ setCurrentPage }) {
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { sendOtp, verifyOtp, loginWithGoogle } = useAuth();
 
-  const handleSubmit = async (e) => {
+  const [step, setStep] = useState('phone'); // 'phone' or 'otp'
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [otp, setOtp] = useState('123456');
+  const [sentOtp, setSentOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [timer, setTimer] = useState(30);
+
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    if (!mobileNumber.trim()) {
+      setError('Please enter a valid mobile number.');
+      return;
+    }
 
+    setLoading(true);
     try {
-      const res = await login(email, password);
+      const res = await sendOtp(mobileNumber);
+      if (res.success) {
+        setSentOtp(res.otp || '123456');
+        setOtp(res.otp || '123456');
+        setStep('otp');
+        setTimer(30);
+      }
+    } catch (err) {
+      setError('Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError(null);
+    if (!otp.trim()) {
+      setError('Please enter the 6-digit OTP code.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await verifyOtp({
+        mobileNumber,
+        otp,
+        fullName,
+        email,
+        college: 'Stanford University'
+      });
       if (res && res.success) {
         setCurrentPage('dashboard');
       }
     } catch (err) {
-      setError(err.message || 'Login failed. Please check credentials.');
+      setError('Invalid OTP code. Please enter 123456.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await loginWithGoogle();
+      setCurrentPage('dashboard');
+    } catch (err) {
+      setError('Google Sign In failed.');
     } finally {
       setLoading(false);
     }
@@ -29,88 +81,162 @@ export default function LoginPage({ setCurrentPage }) {
 
   return (
     <div className="max-w-md mx-auto py-16 px-4">
-      <GlassCard className="border border-indigo-500/20 shadow-2xl">
+      <GlassCard className="border border-indigo-500/20 shadow-2xl space-y-6">
         
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl gradient-btn flex items-center justify-center mx-auto mb-3 shadow-lg shadow-indigo-500/25">
+        {/* Header */}
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/30">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-2xl font-extrabold text-white">Welcome Back</h2>
-          <p className="text-xs text-slate-400 mt-1">Log in to manage your skill sessions & credits</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">Sign In with Mobile & OTP</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">No password needed! Fast and secure verification.</p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2">
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1">College Email</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="email"
-                required
-                placeholder="alex.chen@stanford.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full glass-input pl-10 pr-3.5 py-2.5 rounded-xl text-sm"
-              />
+        {/* Step 1: Phone & Details Input */}
+        {step === 'phone' ? (
+          <form onSubmit={handleSendOtp} className="space-y-4">
+            
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Full Name</label>
+              <div className="relative">
+                <User className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Alex Chen"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full theme-input pl-10 text-xs py-2.5"
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1">Password</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full glass-input pl-10 pr-3.5 py-2.5 rounded-xl text-sm"
-              />
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Gmail / Email Address</label>
+              <div className="relative">
+                <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="email"
+                  required
+                  placeholder="alex.chen@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full theme-input pl-10 text-xs py-2.5"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Quick Demo Fill Buttons */}
-          <div className="pt-1 flex gap-2 text-[11px]">
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Mobile Number for OTP</label>
+              <div className="relative">
+                <Phone className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="tel"
+                  required
+                  placeholder="+91 9876543210"
+                  value={mobileNumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
+                  className="w-full theme-input pl-10 text-xs py-2.5"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2"
+            >
+              {loading ? 'Sending OTP...' : 'Send OTP Code'}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
+            {/* Divider */}
+            <div className="relative flex items-center justify-center my-4">
+              <div className="border-t border-slate-200 dark:border-white/10 w-full" />
+              <span className="bg-white dark:bg-[#121026] px-3 text-[10px] uppercase font-bold text-slate-400 shrink-0">OR</span>
+            </div>
+
+            {/* 1-Click Google Sign In */}
             <button
               type="button"
-              onClick={() => { setEmail('alex.chen@stanford.edu'); setPassword('Password123!'); }}
-              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-indigo-300 font-medium border border-white/5"
+              onClick={handleGoogleSignIn}
+              className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-50 dark:hover:bg-white/5 flex items-center justify-center gap-2 transition"
             >
-              Demo Student
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+              </svg>
+              <span>Continue with Google / Gmail</span>
             </button>
+
+          </form>
+        ) : (
+          /* Step 2: OTP Verification */
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            
+            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
+              <p className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4" />
+                Enter 6-Digit OTP Code
+              </p>
+              <p className="text-slate-600 dark:text-slate-300">
+                OTP sent to <span className="font-bold text-slate-900 dark:text-white">{mobileNumber}</span>
+              </p>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block pt-1">
+                Demo OTP Code: <code className="bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-700 dark:text-emerald-300">{sentOtp || '123456'}</code>
+              </span>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">6-Digit OTP</label>
+              <input
+                type="text"
+                required
+                maxLength="6"
+                placeholder="123456"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full theme-input text-center text-lg font-mono tracking-widest py-2.5 font-bold"
+              />
+            </div>
+
             <button
-              type="button"
-              onClick={() => { setEmail('admin@skillswap.ai'); setPassword('Password123!'); }}
-              className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-medium border border-rose-500/20"
+              type="submit"
+              disabled={loading}
+              className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2"
             >
-              Demo Admin
+              {loading ? 'Verifying OTP...' : 'Verify OTP & Continue'}
+              <CheckCircle2 className="w-4 h-4" />
             </button>
-          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full gradient-btn py-3 rounded-xl font-bold text-white text-sm shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 mt-2"
-          >
-            {loading ? 'Authenticating...' : 'Sign In'}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </form>
+            <div className="flex items-center justify-between text-xs pt-2">
+              <button
+                type="button"
+                onClick={() => setStep('phone')}
+                className="text-slate-500 hover:underline"
+              >
+                &larr; Change Mobile Number
+              </button>
 
-        <p className="text-center text-xs text-slate-400 mt-6">
-          Don't have an account?{' '}
-          <button onClick={() => setCurrentPage('register')} className="text-indigo-400 font-semibold hover:underline">
-            Register now (+50 Credits)
-          </button>
-        </p>
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
+              >
+                Resend OTP
+              </button>
+            </div>
+
+          </form>
+        )}
 
       </GlassCard>
     </div>

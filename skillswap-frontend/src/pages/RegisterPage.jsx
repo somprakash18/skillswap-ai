@@ -1,25 +1,61 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Mail, Lock, User, GraduationCap, Gift, ArrowRight } from 'lucide-react';
+import { Sparkles, Mail, Phone, User, GraduationCap, Gift, ArrowRight, ShieldCheck } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 
 export default function RegisterPage({ setCurrentPage }) {
-  const { register } = useAuth();
+  const { sendOtp, verifyOtp, loginWithGoogle } = useAuth();
+  const [step, setStep] = useState('phone');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
   const [college, setCollege] = useState('Stanford University');
   const [referralCode, setReferralCode] = useState('');
+  const [otp, setOtp] = useState('123456');
+  const [sentOtp, setSentOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
+    setError(null);
+    if (!mobileNumber.trim()) {
+      setError('Please enter a valid mobile number.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await register({ fullName, email, password, college, referralCode });
-      setCurrentPage('dashboard');
+      const res = await sendOtp(mobileNumber);
+      if (res.success) {
+        setSentOtp(res.otp || '123456');
+        setOtp(res.otp || '123456');
+        setStep('otp');
+      }
     } catch (err) {
-      console.error(err);
+      setError('Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await verifyOtp({
+        mobileNumber,
+        otp,
+        fullName,
+        email,
+        college
+      });
+      if (res && res.success) {
+        setCurrentPage('dashboard');
+      }
+    } catch (err) {
+      setError('Invalid OTP code.');
     } finally {
       setLoading(false);
     }
@@ -27,105 +63,149 @@ export default function RegisterPage({ setCurrentPage }) {
 
   return (
     <div className="max-w-md mx-auto py-12 px-4">
-      <GlassCard className="border border-purple-500/20 shadow-2xl">
+      <GlassCard className="border border-purple-500/20 shadow-2xl space-y-5">
         
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl gradient-btn flex items-center justify-center mx-auto mb-3 shadow-lg shadow-purple-500/25">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/30">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-2xl font-extrabold text-white">Create SkillSwap AI Account</h2>
-          <p className="text-xs text-slate-400 mt-1">Get 50 bonus credits instantly upon registration</p>
+          <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">Create Account via Mobile OTP</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Get 50 bonus credits instantly upon OTP verification</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
-          <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1">Full Name</label>
-            <div className="relative">
-              <User className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+        {error && (
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2">
+            <span>{error}</span>
+          </div>
+        )}
+
+        {step === 'phone' ? (
+          <form onSubmit={handleSendOtp} className="space-y-3.5">
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Full Name</label>
+              <div className="relative">
+                <User className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Alex Chen"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full theme-input pl-10 text-xs py-2.5"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Gmail / Email</label>
+              <div className="relative">
+                <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="email"
+                  required
+                  placeholder="alex.chen@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full theme-input pl-10 text-xs py-2.5"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Mobile Number for OTP</label>
+              <div className="relative">
+                <Phone className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="tel"
+                  required
+                  placeholder="+91 9876543210"
+                  value={mobileNumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
+                  className="w-full theme-input pl-10 text-xs py-2.5"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">College / University</label>
+              <div className="relative">
+                <GraduationCap className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  required
+                  placeholder="Stanford University"
+                  value={college}
+                  onChange={(e) => setCollege(e.target.value)}
+                  className="w-full theme-input pl-10 text-xs py-2.5"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Referral Code (Optional)</label>
+              <div className="relative">
+                <Gift className="w-4 h-4 absolute left-3.5 top-3 text-amber-400" />
+                <input
+                  type="text"
+                  placeholder="e.g. ALEX2026 (+25 extra credits)"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  className="w-full theme-input pl-10 text-xs py-2.5"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 mt-2"
+            >
+              {loading ? 'Sending OTP...' : 'Send Verification OTP'}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
+              <p className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4" />
+                Enter Verification OTP
+              </p>
+              <p className="text-slate-600 dark:text-slate-300">
+                Sent to <span className="font-bold text-slate-900 dark:text-white">{mobileNumber}</span>
+              </p>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold block pt-1">
+                Demo OTP Code: <code className="bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-700 dark:text-emerald-300">{sentOtp || '123456'}</code>
+              </span>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">6-Digit OTP</label>
               <input
                 type="text"
                 required
-                placeholder="Alex Chen"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full glass-input pl-10 pr-3.5 py-2.5 rounded-xl text-sm"
+                maxLength="6"
+                placeholder="123456"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full theme-input text-center text-lg font-mono tracking-widest py-2.5 font-bold"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1">College Email</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="email"
-                required
-                placeholder="alex.chen@stanford.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full glass-input pl-10 pr-3.5 py-2.5 rounded-xl text-sm"
-              />
-            </div>
-          </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md"
+            >
+              {loading ? 'Registering...' : 'Verify OTP & Claim 50 Credits'}
+            </button>
+          </form>
+        )}
 
-          <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1">College / University</label>
-            <div className="relative">
-              <GraduationCap className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="text"
-                required
-                placeholder="Stanford University"
-                value={college}
-                onChange={(e) => setCollege(e.target.value)}
-                className="w-full glass-input pl-10 pr-3.5 py-2.5 rounded-xl text-sm"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1">Password</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-              <input
-                type="password"
-                required
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full glass-input pl-10 pr-3.5 py-2.5 rounded-xl text-sm"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-medium text-slate-300 block mb-1">Referral Code (Optional)</label>
-            <div className="relative">
-              <Gift className="w-4 h-4 absolute left-3.5 top-3 text-amber-400" />
-              <input
-                type="text"
-                placeholder="e.g. ALEX2026 (+25 extra credits)"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value)}
-                className="w-full glass-input pl-10 pr-3.5 py-2.5 rounded-xl text-sm"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full gradient-btn py-3 rounded-xl font-bold text-white text-sm shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 mt-3"
-          >
-            {loading ? 'Creating Account...' : 'Register & Claim 50 Credits'}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </form>
-
-        <p className="text-center text-xs text-slate-400 mt-6">
+        <p className="text-center text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-white/10">
           Already registered?{' '}
-          <button onClick={() => setCurrentPage('login')} className="text-indigo-400 font-semibold hover:underline">
-            Log in
+          <button onClick={() => setCurrentPage('login')} className="text-blue-600 dark:text-blue-400 font-bold hover:underline">
+            Sign In with OTP
           </button>
         </p>
 

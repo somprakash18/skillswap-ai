@@ -1,8 +1,6 @@
 package com.skillswap.ai.service;
 
-import com.skillswap.ai.dto.JwtResponse;
-import com.skillswap.ai.dto.LoginRequest;
-import com.skillswap.ai.dto.RegisterRequest;
+import com.skillswap.ai.dto.*;
 import com.skillswap.ai.entity.Referral;
 import com.skillswap.ai.entity.User;
 import com.skillswap.ai.entity.Wallet;
@@ -22,7 +20,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuthService {
@@ -45,49 +46,101 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
 
+    // In-memory thread-safe OTP cache (Mobile Number -> OTP string)
+    private final Map<String, String> otpStorage = new ConcurrentHashMap<>();
+
+    public String sendOtp(SendOtpRequest request) {
+        String cleanPhone = request.getMobileNumber().replaceAll("[^0-9]", "");
+        // Generate a 6-digit OTP (for testing, default to 123456 or random 6-digit number)
+        String generatedOtp = "123456";
+        otpStorage.put(cleanPhone, generatedOtp);
+        return generatedOtp;
+    }
+
+    @Transactional
+    public JwtResponse verifyOtp(VerifyOtpRequest request) {
+        String cleanPhone = request.getMobileNumber().replaceAll("[^0-9]", "");
+        String storedOtp = otpStorage.get(cleanPhone);
+
+        // Allow '123456' as standard OTP or matching stored OTP
+        if (storedOtp == null && !"123456".equals(request.getOtp())) {
+            throw new BadRequestException("Invalid or expired OTP. Please request a new OTP.");
+        }
+
+        if (storedOtp != null && !storedOtp.equals(request.getOtp()) && !"123456".equals(request.getOtp())) {
+            throw new BadRequestException("Invalid OTP code entered!");
+        }
+
+        // Clean up OTP after use
+        otpStorage.remove(cleanPhone);
+
+        // Find or Create user by email or mobile number
+        String email = (request.getEmail() != null && !request.getEmail().isBlank()) 
+                ? request.getEmail() 
+                : "user_" + cleanPhone + "@gmail.com";
+
+        String fullName = (request.getFullName() != null && !request.getFullName().isBlank()) 
+                ? request.getFullName() 
+                : "Student (" + cleanPhone.substring(Math.max(0, cleanPhone.length() - 4)) + ")";
+
+        String college = (request.getCollege() != null && !request.getCollege().isBlank()) 
+                ? request.getCollege() 
+                : "Stanford University";
+
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User(
+                    email,
+                    encoder.encode("OTP_AUTH_PASS_" + UUID.randomUUID()),
+                    fullName,
+                    college
+            );
+            newUser.setBio("Joined via Mobile OTP authentication!");
+            newUser.setRole(Role.ROLE_USER);
+            newUser.setReferralCode("SKILL-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
+            newUser.setAvatarUrl("https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150");
+
+            User saved = userRepository.save(newUser);
+
+            // Give 50 starter bonus credits in wallet
+            Wallet wallet = new Wallet(saved, 50);
+            walletRepository.save(wallet);
+
+            return saved;
+        });
+
+        if (Boolean.TRUE.equals(user.getIsBlocked())) {
+            throw new BadRequestException("Your account has been suspended. Please contact admin.");
+        }
+
+        String jwt = jwtUtils.generateTokenFromEmail(user.getEmail());
+
+        return new JwtResponse(jwt, user.getId(), user.getEmail(), user.getFullName(),
+                user.getCollege(), user.getRole().name(), user.getAvatarUrl());
+    }
+
     @Transactional
     public JwtResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email is already registered!");
         }
 
-        // Create new user
         User user = new User(
                 request.getEmail(),
-                encoder.encode(request.getPassword()),
+                encoder.encode(request.getPassword() != null ? request.getPassword() : "OTP_PASS_" + UUID.randomUUID()),
                 request.getFullName(),
-                request.getCollege()
+                request.getCollege() != null ? request.getCollege() : "Stanford University"
         );
-        user.setBio(request.getBio() != null ? request.getBio() : "Passionate about learning and sharing skills!");
+        user.setBio("Passionate about learning and sharing skills!");
         user.setRole(Role.ROLE_USER);
         user.setReferralCode("SKILL-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
         user.setAvatarUrl("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150");
 
         User savedUser = userRepository.save(user);
 
-        // Initialize wallet with 50 sign-up bonus credits
         Wallet wallet = new Wallet(savedUser, 50);
         walletRepository.save(wallet);
 
-        // Process referral code if provided
-        if (request.getReferralCode() != null && !request.getReferralCode().isBlank()) {
-            userRepository.findByReferralCode(request.getReferralCode()).ifPresent(referrer -> {
-                // Reward referrer with 25 bonus credits
-                Wallet referrerWallet = walletRepository.findByUserId(referrer.getId()).orElse(null);
-                if (referrerWallet != null) {
-                    referrerWallet.setBalance(referrerWallet.getBalance() + 25);
-                    referrerWallet.setTotalEarned(referrerWallet.getTotalEarned() + 25);
-                    walletRepository.save(referrerWallet);
-                }
-                referralRepository.save(new Referral(referrer, savedUser, request.getReferralCode(), 25));
-            });
-        }
-
-        // Authenticate new user & generate JWT
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        String jwt = jwtUtils.generateJwtTokenFromUsername(savedUser.getEmail());
 
         return new JwtResponse(jwt, savedUser.getId(), savedUser.getEmail(), savedUser.getFullName(),
                 savedUser.getCollege(), savedUser.getRole().name(), savedUser.getAvatarUrl());

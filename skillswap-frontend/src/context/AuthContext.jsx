@@ -4,30 +4,20 @@ import { fetchApi } from '../services/api';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  // Read saved session or default to NULL (No hardcoded default user)
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : {
-      id: 2,
-      email: 'alex.chen@stanford.edu',
-      fullName: 'Alex Chen',
-      college: 'Stanford University',
-      role: 'ROLE_USER',
-      avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
-      credits: 120,
-      rating: 4.9,
-      streakDays: 7
-    };
+    return saved ? JSON.parse(saved) : null;
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('token') || 'demo-jwt-token-alex-chen');
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [wallet, setWallet] = useState({ balance: 120, totalEarned: 85, totalSpent: 45 });
   const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Session Confirmed!', message: 'Priya Sharma confirmed your Spring Boot Mentorship session.', type: 'BOOKING', isRead: false },
-    { id: 2, title: 'Certificate Issued!', message: 'You earned a verified certificate in Docker & Kubernetes Deployment.', type: 'SYSTEM', isRead: true }
+    { id: 1, title: 'Welcome to SkillSwap AI!', message: 'You have received 50 bonus credits.', type: 'SYSTEM', isRead: false }
   ]);
 
   useEffect(() => {
-    if (token) {
+    if (token && user) {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
     } else {
@@ -36,11 +26,29 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token, user]);
 
-  const login = async (email, password) => {
+  // Send Mobile OTP
+  const sendOtp = async (mobileNumber) => {
     try {
-      const res = await fetchApi('/auth/login', {
+      const res = await fetchApi('/auth/send-otp', {
         method: 'POST',
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ mobileNumber })
+      });
+      if (res.success) {
+        return { success: true, otp: res.data?.otp || '123456', message: res.message };
+      }
+    } catch (e) {
+      console.log('Using simulation OTP mode');
+    }
+    // Simulation fallback
+    return { success: true, otp: '123456', message: 'OTP sent to ' + mobileNumber };
+  };
+
+  // Verify Mobile OTP & Sign In / Sign Up
+  const verifyOtp = async ({ mobileNumber, otp, fullName, email, college }) => {
+    try {
+      const res = await fetchApi('/auth/verify-otp', {
+        method: 'POST',
+        body: JSON.stringify({ mobileNumber, otp, fullName, email, college })
       });
       if (res.success && res.data) {
         setToken(res.data.token);
@@ -48,40 +56,65 @@ export const AuthProvider = ({ children }) => {
           id: res.data.id,
           email: res.data.email,
           fullName: res.data.fullName,
-          college: res.data.college,
-          role: res.data.role,
+          college: res.data.college || 'Stanford University',
+          mobileNumber: mobileNumber,
+          role: res.data.role || 'ROLE_USER',
           avatarUrl: res.data.avatarUrl || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
-          credits: 120,
-          rating: 4.9,
-          streakDays: 7
+          credits: 50,
+          rating: 5.0,
+          streakDays: 1
         };
         setUser(userData);
         return { success: true };
       }
     } catch (e) {
-      // Mock Login fallback for demo
-      const mockUser = {
-        id: email.includes('admin') ? 1 : 2,
-        email: email,
-        fullName: email.includes('admin') ? 'SkillSwap Admin' : 'Alex Chen',
-        college: 'Stanford University',
-        role: email.includes('admin') ? 'ROLE_ADMIN' : 'ROLE_USER',
-        avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
-        credits: 120,
-        rating: 4.9,
-        streakDays: 7
-      };
-      setToken('demo-token-' + Date.now());
-      setUser(mockUser);
-      return { success: true };
+      console.log('Using local OTP login verification');
     }
+
+    // Local OTP Auth Fallback
+    const cleanPhone = mobileNumber.replace(/[^0-9]/g, '');
+    const newUser = {
+      id: Date.now(),
+      email: email || `user_${cleanPhone}@gmail.com`,
+      fullName: fullName || `Student (${cleanPhone.slice(-4)})`,
+      college: college || 'Stanford University',
+      mobileNumber: mobileNumber,
+      role: 'ROLE_USER',
+      avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
+      credits: 50,
+      rating: 5.0,
+      streakDays: 1
+    };
+
+    setToken('jwt-otp-token-' + Date.now());
+    setUser(newUser);
+    return { success: true };
   };
 
-  const register = async (registerData) => {
+  // 1-Click Google / Gmail Sign In
+  const loginWithGoogle = async () => {
+    const googleUser = {
+      id: Date.now(),
+      email: 'student.google@gmail.com',
+      fullName: 'Google Student',
+      college: 'Stanford University',
+      mobileNumber: '+91 9876543210',
+      role: 'ROLE_USER',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      credits: 50,
+      rating: 5.0,
+      streakDays: 1
+    };
+    setToken('jwt-google-token-' + Date.now());
+    setUser(googleUser);
+    return { success: true };
+  };
+
+  const login = async (email, password) => {
     try {
-      const res = await fetchApi('/auth/register', {
+      const res = await fetchApi('/auth/login', {
         method: 'POST',
-        body: JSON.stringify(registerData)
+        body: JSON.stringify({ email, password })
       });
       if (res.success && res.data) {
         setToken(res.data.token);
@@ -92,26 +125,26 @@ export const AuthProvider = ({ children }) => {
           college: res.data.college,
           role: res.data.role,
           avatarUrl: res.data.avatarUrl,
-          credits: 50,
-          rating: 5.0,
-          streakDays: 1
+          credits: 120,
+          rating: 4.9,
+          streakDays: 7
         });
         return { success: true };
       }
     } catch (e) {
-      const newUser = {
+      const mockUser = {
         id: Date.now(),
-        email: registerData.email,
-        fullName: registerData.fullName,
-        college: registerData.college || 'Stanford University',
+        email: email,
+        fullName: email.split('@')[0],
+        college: 'Stanford University',
         role: 'ROLE_USER',
-        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
         credits: 50,
         rating: 5.0,
         streakDays: 1
       };
-      setToken('demo-register-token-' + Date.now());
-      setUser(newUser);
+      setToken('demo-token-' + Date.now());
+      setUser(mockUser);
       return { success: true };
     }
   };
@@ -123,15 +156,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateCredits = (amount) => {
-    setWallet(prev => ({
-      ...prev,
-      balance: prev.balance + amount
-    }));
+    setWallet(prev => ({ ...prev, balance: prev.balance + amount }));
     setUser(prev => prev ? ({ ...prev, credits: prev.credits + amount }) : null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, wallet, notifications, login, register, logout, updateCredits }}>
+    <AuthContext.Provider value={{ user, token, wallet, notifications, sendOtp, verifyOtp, loginWithGoogle, login, logout, updateCredits }}>
       {children}
     </AuthContext.Provider>
   );
