@@ -4,20 +4,24 @@ import Sidebar from './components/Sidebar';
 import RightActivityFeed from './components/RightActivityFeed';
 import NewSwapModal from './components/NewSwapModal';
 import LiveVideoCallRoom from './components/LiveVideoCallRoom';
-import { Search, Bell, Mail, Plus, ShieldCheck, User, LogOut, GraduationCap, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, Bell, Mail, Plus, ShieldCheck, User, LogOut, GraduationCap, ChevronDown, Sparkles, HelpCircle, FileText, Gift } from 'lucide-react';
 
-// Pages
-import Dashboard from './pages/Dashboard';
+// EdTech Pages
+import StudentDashboard from './pages/StudentDashboard';
+import TeacherDashboard from './pages/TeacherDashboard';
+import OwnerDashboard from './pages/AdminDashboard'; // Owner Admin Dashboard
 import ExploreSkills from './pages/ExploreSkills';
 import MatchesPage from './pages/MatchesPage';
 import SkillDetailPage from './pages/SkillDetailPage';
 import StudyMaterialsPage from './pages/StudyMaterialsPage';
+import PdfLibraryPage from './pages/PdfLibraryPage';
+import QuizEnginePage from './pages/QuizEnginePage';
+import ReferralPage from './pages/ReferralPage';
+import UserProfilePage from './pages/UserProfilePage';
 import ChatPage from './pages/ChatPage';
 import WalletPage from './pages/WalletPage';
-import ProfilePage from './pages/ProfilePage';
 import CertificatesPage from './pages/CertificatesPage';
 import NotificationsPage from './pages/NotificationsPage';
-import AdminDashboard from './pages/AdminDashboard';
 import FounderPortalPage from './pages/FounderPortalPage';
 import TeacherPortalPage from './pages/TeacherPortalPage';
 import PricingPage from './pages/PricingPage';
@@ -29,7 +33,7 @@ import LandingPage from './pages/LandingPage';
 
 function AppContent() {
   const { user, logout } = useAuth();
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [currentPage, setCurrentPage] = useState('student-dashboard');
   const [selectedSkill, setSelectedSkill] = useState(null);
   const [showNewSwapModal, setShowNewSwapModal] = useState(false);
   const [activeVideoSession, setActiveVideoSession] = useState(null);
@@ -67,35 +71,45 @@ function AppContent() {
         return <FounderPortalPage setCurrentPage={setCurrentPage} />;
       case 'teacher-signup':
         return <TeacherPortalPage setCurrentPage={setCurrentPage} />;
+      case 'student-dashboard':
       case 'dashboard':
         return (
-          <Dashboard
+          <StudentDashboard
             setCurrentPage={setCurrentPage}
             setSelectedSkill={setSelectedSkill}
             onOpenNewSwap={() => setShowNewSwapModal(true)}
             onOpenVideoCall={(course) => setActiveVideoSession({ mentorName: course.mentor, skillTitle: course.title })}
           />
         );
+      case 'teacher-dashboard':
+        return <TeacherDashboard setCurrentPage={setCurrentPage} />;
+      case 'owner-dashboard':
+      case 'admin':
+        return <OwnerDashboard />;
+      case 'quiz-engine':
+        return <QuizEnginePage setCurrentPage={setCurrentPage} />;
+      case 'pdf-library':
+      case 'materials':
+        return <PdfLibraryPage />;
+      case 'referral':
+        return <ReferralPage />;
+      case 'user-profile':
+      case 'profile':
+        return <UserProfilePage />;
       case 'explore':
         return <ExploreSkills setCurrentPage={setCurrentPage} setSelectedSkill={setSelectedSkill} />;
       case 'matches':
         return <MatchesPage setCurrentPage={setCurrentPage} setSelectedSkill={setSelectedSkill} />;
-      case 'materials':
-        return <StudyMaterialsPage setCurrentPage={setCurrentPage} />;
       case 'skill-detail':
         return <SkillDetailPage skill={selectedSkill} setCurrentPage={setCurrentPage} />;
       case 'chat':
         return <ChatPage />;
       case 'wallet':
         return <WalletPage />;
-      case 'profile':
-        return <ProfilePage />;
       case 'certificates':
         return <CertificatesPage />;
       case 'notifications':
         return <NotificationsPage />;
-      case 'admin':
-        return <AdminDashboard />;
       case 'pricing':
         return <PricingPage setCurrentPage={setCurrentPage} />;
       case 'faq':
@@ -104,7 +118,7 @@ function AppContent() {
         return <ContactPage />;
       default:
         return (
-          <Dashboard
+          <StudentDashboard
             setCurrentPage={setCurrentPage}
             setSelectedSkill={setSelectedSkill}
             onOpenNewSwap={() => setShowNewSwapModal(true)}
@@ -136,7 +150,7 @@ function AppContent() {
       {/* Center Main Layout */}
       <div className="flex-1 flex flex-col min-w-0">
         
-        {/* Top Header Bar — Modern & Minimal (Linear / Stripe Style) */}
+        {/* Top Header Bar */}
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800 px-6 py-3.5 flex items-center justify-between gap-6">
           
           {/* Rounded Pill Search Bar */}
@@ -144,15 +158,14 @@ function AppContent() {
             <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
             <input
               type="text"
-              placeholder="Search for skills, mentors, or courses... (⌘K)"
+              placeholder="Search JEE, NEET, Coding, PDFs, Quizzes... (⌘K)"
               className="w-full bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-900 dark:text-white rounded-full pl-11 pr-4 py-2 text-xs font-medium focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 transition"
             />
           </div>
 
-          {/* Right Header Navigation Icons & Profile Dropdown */}
+          {/* Right Header Controls */}
           <div className="flex items-center gap-3">
             
-            {/* Notification Bell */}
             <button
               onClick={() => setCurrentPage('notifications')}
               className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 relative transition"
@@ -162,7 +175,6 @@ function AppContent() {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
             </button>
 
-            {/* Messages */}
             <button
               onClick={() => setCurrentPage('chat')}
               className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
@@ -171,16 +183,15 @@ function AppContent() {
               <Mail className="w-4.5 h-4.5" />
             </button>
 
-            {/* Primary Action Button */}
             <button
               onClick={() => setShowNewSwapModal(true)}
               className="btn-primary text-xs font-semibold px-4 py-2"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Skill Swap</span>
+              <span>Add Course / Swap</span>
             </button>
 
-            {/* Clean User Profile Dropdown */}
+            {/* Profile Dropdown */}
             {user && (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -199,32 +210,40 @@ function AppContent() {
                   <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1E293B] rounded-2xl shadow-xl border border-slate-200/80 dark:border-slate-700 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                     <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/60">
                       <p className="font-semibold text-xs text-slate-900 dark:text-white">{user.fullName}</p>
-                      <p className="text-[11px] text-slate-400 truncate">{user.email || 'user@skillswap.ai'}</p>
+                      <p className="text-[11px] text-slate-400 truncate">{user.email || 'student@skillswap.ai'}</p>
                     </div>
 
                     <div className="py-1 text-xs text-slate-700 dark:text-slate-300">
                       <button
-                        onClick={() => { setCurrentPage('profile'); setShowProfileMenu(false); }}
+                        onClick={() => { setCurrentPage('student-dashboard'); setShowProfileMenu(false); }}
                         className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 font-medium"
                       >
-                        <User className="w-4 h-4 text-slate-400" />
-                        <span>My Profile</span>
+                        <User className="w-4 h-4 text-blue-500" />
+                        <span>Student Dashboard</span>
                       </button>
 
                       <button
-                        onClick={() => { setCurrentPage('admin'); setShowProfileMenu(false); }}
+                        onClick={() => { setCurrentPage('teacher-dashboard'); setShowProfileMenu(false); }}
+                        className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 font-medium text-purple-600 dark:text-purple-400"
+                      >
+                        <GraduationCap className="w-4 h-4 text-purple-500" />
+                        <span>Teacher Dashboard</span>
+                      </button>
+
+                      <button
+                        onClick={() => { setCurrentPage('owner-dashboard'); setShowProfileMenu(false); }}
                         className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 font-medium text-amber-600 dark:text-amber-400"
                       >
                         <ShieldCheck className="w-4 h-4 text-amber-500" />
-                        <span>Owner Analytics</span>
+                        <span>Owner Dashboard</span>
                       </button>
 
                       <button
-                        onClick={() => { setCurrentPage('teacher-signup'); setShowProfileMenu(false); }}
-                        className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 font-medium text-blue-600 dark:text-blue-400"
+                        onClick={() => { setCurrentPage('user-profile'); setShowProfileMenu(false); }}
+                        className="w-full px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 font-medium"
                       >
-                        <GraduationCap className="w-4 h-4 text-blue-500" />
-                        <span>Teacher Portal</span>
+                        <User className="w-4 h-4 text-slate-400" />
+                        <span>My Dedicated Profile</span>
                       </button>
                     </div>
 
@@ -245,7 +264,7 @@ function AppContent() {
 
         </header>
 
-        {/* Dynamic Page Body */}
+        {/* Dynamic Main Page Content */}
         <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
           {renderMainView()}
         </main>
@@ -253,7 +272,7 @@ function AppContent() {
       </div>
 
       {/* Right Sidebar Activity Feed */}
-      {!['chat', 'settings', 'certificates', 'admin'].includes(currentPage) && (
+      {!['chat', 'settings', 'certificates', 'admin', 'owner-dashboard'].includes(currentPage) && (
         <RightActivityFeed
           onAddSkill={() => setShowNewSwapModal(true)}
           setCurrentPage={setCurrentPage}
