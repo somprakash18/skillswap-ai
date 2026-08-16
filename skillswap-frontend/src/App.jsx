@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar';
 import RightActivityFeed from './components/RightActivityFeed';
 import NewSwapModal from './components/NewSwapModal';
 import LiveVideoCallRoom from './components/LiveVideoCallRoom';
-import { Search, Bell, Mail, Plus, LogOut } from 'lucide-react';
+import { Search, Bell, Mail, Plus, ShieldCheck } from 'lucide-react';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -17,6 +17,7 @@ import ProfilePage from './pages/ProfilePage';
 import CertificatesPage from './pages/CertificatesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import AdminDashboard from './pages/AdminDashboard';
+import FounderPortalPage from './pages/FounderPortalPage';
 import PricingPage from './pages/PricingPage';
 import FAQPage from './pages/FAQPage';
 import ContactPage from './pages/ContactPage';
@@ -48,6 +49,8 @@ function AppContent() {
         return <LoginPage setCurrentPage={setCurrentPage} />;
       case 'register':
         return <RegisterPage setCurrentPage={setCurrentPage} />;
+      case 'founder-portal':
+        return <FounderPortalPage setCurrentPage={setCurrentPage} />;
       case 'dashboard':
         return (
           <Dashboard
@@ -93,7 +96,7 @@ function AppContent() {
     }
   };
 
-  if (['landing', 'login', 'register'].includes(currentPage)) {
+  if (['landing', 'login', 'register', 'founder-portal'].includes(currentPage)) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#0b0914] text-slate-900 dark:text-white">
         {renderMainView()}
@@ -128,6 +131,16 @@ function AppContent() {
           </div>
 
           <div className="flex items-center gap-3">
+            
+            {/* Owner Control Center Button */}
+            <button
+              onClick={() => setCurrentPage('admin')}
+              className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold text-xs border border-amber-500/20 flex items-center gap-1.5"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-500" />
+              <span>Owner Analytics</span>
+            </button>
+
             <button
               onClick={() => setCurrentPage('notifications')}
               className="p-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 text-slate-600 dark:text-slate-300 relative transition"

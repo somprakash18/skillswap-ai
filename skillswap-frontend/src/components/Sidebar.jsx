@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Home, Compass, Users, MessageSquare, Calendar, Award, Settings, Moon, Sun, ArrowRight, RefreshCw, LogOut } from 'lucide-react';
+import { Home, Compass, Users, MessageSquare, Calendar, Award, Settings, Moon, Sun, ArrowRight, RefreshCw, LogOut, ShieldCheck } from 'lucide-react';
 
 export default function Sidebar({ currentPage, setCurrentPage, isDarkMode, setIsDarkMode }) {
   const { user, logout } = useAuth();
@@ -12,6 +12,7 @@ export default function Sidebar({ currentPage, setCurrentPage, isDarkMode, setIs
     { id: 'chat', label: 'Messages', icon: MessageSquare },
     { id: 'events', label: 'Events & Sessions', icon: Calendar },
     { id: 'certificates', label: 'Certificates', icon: Award },
+    { id: 'admin', label: 'Owner Analytics', icon: ShieldCheck, isOwner: true },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -47,10 +48,12 @@ export default function Sidebar({ currentPage, setCurrentPage, isDarkMode, setIs
                 className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                   active
                     ? 'bg-blue-50 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/30 shadow-sm'
+                    : item.isOwner
+                    ? 'text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                 }`}
               >
-                <Icon className={`w-5 h-5 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                <Icon className={`w-5 h-5 ${active ? 'text-blue-600 dark:text-blue-400' : item.isOwner ? 'text-amber-500' : 'text-slate-400'}`} />
                 <span>{item.label}</span>
               </button>
             );
@@ -61,6 +64,18 @@ export default function Sidebar({ currentPage, setCurrentPage, isDarkMode, setIs
       {/* Footer Controls */}
       <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/10">
         
+        {/* Founder Portal Shortcut */}
+        <button
+          onClick={() => setCurrentPage('founder-portal')}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold transition border border-amber-500/20"
+        >
+          <span className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-amber-500" />
+            <span>Founder Portal</span>
+          </span>
+          <span className="text-[9px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-black">OWNER</span>
+        </button>
+
         {/* Dark Mode Toggle */}
         <button
           onClick={() => setIsDarkMode(!isDarkMode)}
