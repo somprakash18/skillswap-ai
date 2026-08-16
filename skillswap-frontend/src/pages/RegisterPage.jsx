@@ -4,14 +4,14 @@ import { Sparkles, Mail, Phone, User, GraduationCap, Gift, ArrowRight, ShieldChe
 import GlassCard from '../components/GlassCard';
 
 export default function RegisterPage({ setCurrentPage }) {
-  const { sendOtp, verifyOtp, loginWithGoogle } = useAuth();
+  const { sendOtp, verifyOtp } = useAuth();
   const [step, setStep] = useState('phone');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
-  const [college, setCollege] = useState('Stanford University');
+  const [college, setCollege] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [otp, setOtp] = useState('123456');
+  const [otp, setOtp] = useState('');
   const [sentOtp, setSentOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -83,74 +83,74 @@ export default function RegisterPage({ setCurrentPage }) {
           <form onSubmit={handleSendOtp} className="space-y-3.5">
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Full Name</label>
-              <div className="relative">
-                <User className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <div className="relative flex items-center">
+                <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Alex Chen"
+                  placeholder="Enter full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full theme-input pl-10 text-xs py-2.5"
+                  className="w-full theme-input pl-11 text-xs py-3"
                 />
               </div>
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Gmail / Email</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <div className="relative flex items-center">
+                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="email"
                   required
-                  placeholder="alex.chen@gmail.com"
+                  placeholder="Enter email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full theme-input pl-10 text-xs py-2.5"
+                  className="w-full theme-input pl-11 text-xs py-3"
                 />
               </div>
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Mobile Number for OTP</label>
-              <div className="relative">
-                <Phone className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <div className="relative flex items-center">
+                <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="tel"
                   required
-                  placeholder="+91 9876543210"
+                  placeholder="Enter 10-digit mobile number"
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
-                  className="w-full theme-input pl-10 text-xs py-2.5"
+                  className="w-full theme-input pl-11 text-xs py-3"
                 />
               </div>
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">College / University</label>
-              <div className="relative">
-                <GraduationCap className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <div className="relative flex items-center">
+                <GraduationCap className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="text"
                   required
-                  placeholder="Stanford University"
+                  placeholder="Enter your college / university name"
                   value={college}
                   onChange={(e) => setCollege(e.target.value)}
-                  className="w-full theme-input pl-10 text-xs py-2.5"
+                  className="w-full theme-input pl-11 text-xs py-3"
                 />
               </div>
             </div>
 
             <div>
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Referral Code (Optional)</label>
-              <div className="relative">
-                <Gift className="w-4 h-4 absolute left-3.5 top-3 text-amber-400" />
+              <div className="relative flex items-center">
+                <Gift className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-400 pointer-events-none z-10" />
                 <input
                   type="text"
                   placeholder="e.g. ALEX2026 (+25 extra credits)"
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value)}
-                  className="w-full theme-input pl-10 text-xs py-2.5"
+                  className="w-full theme-input pl-11 text-xs py-3"
                 />
               </div>
             </div>
@@ -166,7 +166,7 @@ export default function RegisterPage({ setCurrentPage }) {
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
+            <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
               <p className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4" />
                 Enter Verification OTP
@@ -188,7 +188,7 @@ export default function RegisterPage({ setCurrentPage }) {
                 placeholder="123456"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full theme-input text-center text-lg font-mono tracking-widest py-2.5 font-bold"
+                className="w-full theme-input text-center text-lg font-mono tracking-widest py-3 font-bold"
               />
             </div>
 

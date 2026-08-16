@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, Mail, Phone, User, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Sparkles, Mail, Phone, User, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 
 export default function LoginPage({ setCurrentPage }) {
@@ -10,11 +10,10 @@ export default function LoginPage({ setCurrentPage }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
-  const [otp, setOtp] = useState('123456');
+  const [otp, setOtp] = useState('');
   const [sentOtp, setSentOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [timer, setTimer] = useState(30);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -31,7 +30,6 @@ export default function LoginPage({ setCurrentPage }) {
         setSentOtp(res.otp || '123456');
         setOtp(res.otp || '123456');
         setStep('otp');
-        setTimer(30);
       }
     } catch (err) {
       setError('Failed to send OTP. Please try again.');
@@ -103,46 +101,46 @@ export default function LoginPage({ setCurrentPage }) {
           <form onSubmit={handleSendOtp} className="space-y-4">
             
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Full Name</label>
-              <div className="relative">
-                <User className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Full Name</label>
+              <div className="relative flex items-center">
+                <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Alex Chen"
+                  placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full theme-input pl-10 text-xs py-2.5"
+                  className="w-full theme-input pl-11 text-xs py-3"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Gmail / Email Address</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Gmail / Email Address</label>
+              <div className="relative flex items-center">
+                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="email"
                   required
-                  placeholder="alex.chen@gmail.com"
+                  placeholder="Enter your Gmail address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full theme-input pl-10 text-xs py-2.5"
+                  className="w-full theme-input pl-11 text-xs py-3"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Mobile Number for OTP</label>
-              <div className="relative">
-                <Phone className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">Mobile Number for OTP</label>
+              <div className="relative flex items-center">
+                <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" />
                 <input
                   type="tel"
                   required
-                  placeholder="+91 9876543210"
+                  placeholder="Enter your 10-digit mobile number"
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
-                  className="w-full theme-input pl-10 text-xs py-2.5"
+                  className="w-full theme-input pl-11 text-xs py-3"
                 />
               </div>
             </div>
@@ -150,7 +148,7 @@ export default function LoginPage({ setCurrentPage }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2"
+              className="w-full btn-primary-blue py-3 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2 mt-2"
             >
               {loading ? 'Sending OTP...' : 'Send OTP Code'}
               <ArrowRight className="w-4 h-4" />
@@ -166,7 +164,7 @@ export default function LoginPage({ setCurrentPage }) {
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-50 dark:hover:bg-white/5 flex items-center justify-center gap-2 transition"
+              className="w-full py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-50 dark:hover:bg-white/5 flex items-center justify-center gap-2 transition"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -182,7 +180,7 @@ export default function LoginPage({ setCurrentPage }) {
           /* Step 2: OTP Verification */
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             
-            <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
+            <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs space-y-1">
               <p className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4" />
                 Enter 6-Digit OTP Code
@@ -204,7 +202,7 @@ export default function LoginPage({ setCurrentPage }) {
                 placeholder="123456"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full theme-input text-center text-lg font-mono tracking-widest py-2.5 font-bold"
+                className="w-full theme-input text-center text-lg font-mono tracking-widest py-3 font-bold"
               />
             </div>
 
